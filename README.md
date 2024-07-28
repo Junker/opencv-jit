@@ -1,7 +1,7 @@
 # OpenCV-JIT
 
 OpenCV-JIT uses [CL-CXX-JIT](https://github.com/Islam0mar/CL-CXX-JIT) system 
-which compiles C++ code on system load.
+which compiles C++ bindings on system load.
 
 ## Requirements
 
