@@ -7,7 +7,7 @@ which compiles C++ bindings on system load.
 
 - Installed [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
 - Installed GCC (g++)
-- Installed OpenCV 4.5+
+- Installed OpenCV 4.5+ (with development files)
 
 ## Warning
 
