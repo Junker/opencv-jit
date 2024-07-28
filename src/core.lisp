@@ -117,13 +117,16 @@
 
 @export
 (defun make-mat ()
-  (%new-mat))
+  (make-instance 'mat
+                 :ptr (%new-mat)))
 
 @export
 (defun make-mat-with-size (rows cols type &optional s)
-  (if s
-      (%new-mat-rows-cols-type-s rows cols (const-kw-int type *mat-types*) (cvo-ptr s))
-      (%new-mat-rows-cols-type rows cols (const-kw-int type *mat-types*))))
+  (let ((mat (if s
+                 (%new-mat-rows-cols-type-s rows cols (const-kw-int type *mat-types*) (cvo-ptr s))
+                 (%new-mat-rows-cols-type rows cols (const-kw-int type *mat-types*)))))
+    (make-instance 'mat
+                   :ptr mat)))
 
 @export
 (defmethod mat-at ((mat mat) i0 &optional (i1 nil i1p) (i2 nil i2p))
