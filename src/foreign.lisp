@@ -162,6 +162,7 @@
         :%mat-convert-to "[](cv::Mat *mat, cv::Mat *dst, int type){return mat->convertTo(*dst, type);}"
         :%mat-elem-size "[](cv::Mat *mat){return mat->elemSize();}"
         :%mat-depth "[](cv::Mat *mat){return mat->depth();}"
+        :%mat-dims "[](cv::Mat *mat){return mat->dims;}"
         :%mat-inv "[](cv::Mat *mat){return mat->inv();}"
         :%mat-release "[](cv::Mat *mat){return mat->release();}"
         :%mat-reshape "[](cv::Mat *mat, int cn, int rows){return new cv::Mat(mat->reshape(cn, rows));}"

@@ -269,6 +269,8 @@
 @export
 (defmethod mat-empty-p ((mat mat))
   (%mat-empty (cvo-ptr mat)))
+(defmethod mat-dims ((m mat))
+  (%mat-dims (cvo-ptr m)))
 
 @export
 (defmethod mat-row ((mat mat) idx)
