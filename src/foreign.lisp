@@ -97,7 +97,6 @@
         :%new-scalar "[](){return new cv::Scalar();}"
         :%new-scalar4 "[](double v0, double v1, double v2, double v3){return new cv::Scalar(v0,v1,v2,v3);}"
         :%scalar-delete "[](cv::Scalar *scr){delete scr;}"
-        :%scalar-val "[](cv::Scalar *scr, int i){return scr->val[i];}"
         ;; ======== Mat
         :%new-mat "[](){return new cv::Mat();}"
         :%new-mat-rows-cols-type "[](int rows, int cols, int type){return new cv::Mat(rows,cols,type);}"

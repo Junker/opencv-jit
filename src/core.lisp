@@ -99,7 +99,7 @@
 @export-class
 (defclass cvo ()
   ((ptr :initarg :ptr
-        :accessor cvo-ptr))
+        :reader cvo-ptr))
   (:default-initargs
    :ptr (error "PTR required.")))
 
@@ -107,9 +107,9 @@
 @export-class
 (defclass vec (cvo)
   ((len :initarg :len
-        :accessor vec-len)
+        :reader vec-len)
    (type :initarg :type
-         :accessor vec-type))
+         :reader vec-type))
   (:default-initargs
    :len (error "LEN required.")
    :type (error "TYPE required.")))
@@ -185,6 +185,18 @@
                  (2 (%vec-ushort2-val ptr i))
                  (3 (%vec-ushort3-val ptr i))
                  (4 (%vec-ushort4-val ptr i)))))))
+
+@export
+(defmethod vec-to-list ((v vec))
+  (append (list (vec-val v 0) (vec-val v 1))
+          (when (> (vec-len v) 2)
+            (list (vec-val v 2)))
+          (when (> (vec-len v) 3)
+            (list (vec-val v 4)))))
+@export
+(defmethod vec-to-vector ((v vec))
+  (make-array (vec-len v)
+              :initial-contents (vec-to-list v)))
 
 ;; == Mat
 @export
@@ -326,7 +338,7 @@
 
 ;; == Scalar
 @export
-(defclass scalar (cvo) ())
+(defclass scalar (vec) ())
 
 (defmethod initialize-instance :after ((sc scalar) &key)
   (let ((ptr (cvo-ptr sc)))
@@ -335,15 +347,17 @@
 
 @export
 (defun make-scalar (&optional (v0 0) (v1 0) (v2 0) (v3 0))
-  (make-instance 'scalar :ptr (%new-scalar4 (coerce v0 'double-float)
-                                            (coerce v1 'double-float)
-                                            (coerce v2 'double-float)
-                                            (coerce v3 'double-float))))
+  (make-instance 'scalar
+                 :len 4
+                 :type :double
+                 :ptr (%new-scalar4 (coerce v0 'double-float)
+                                    (coerce v1 'double-float)
+                                    (coerce v2 'double-float)
+                                    (coerce v3 'double-float))))
 
 @export
 (defmethod scalar-val ((sc scalar) idx)
-  (assert (<= idx 4))
-  (%scalar-val (cvo-ptr sc) idx))
+  (vec-val sc idx))
 
 ;; == Point
 @export
