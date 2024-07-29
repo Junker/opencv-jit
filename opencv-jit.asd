@@ -5,7 +5,7 @@
   :description "Bindings for OpenCV"
   :homepage "https://github.com/Junker/opencv-jit"
   :source-control (:git "https://github.com/Junker/opencv-jit.git")
-  :depends-on ("uiop" "cxx-jit" "cl-annot" "trivial-garbage")
+  :depends-on ("uiop" "cxx-jit" "cl-annot" "trivial-garbage" "trivial-types")
   :components ((:module "src"
                 :components ((:file "foreign")
                              (:file "util")
