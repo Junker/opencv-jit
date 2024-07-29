@@ -586,8 +586,8 @@
     mat))
 
 @export
-(defmethod resize ((input mat) size &key dst (interpolation :INTER-LINEAR))
+(defmethod resize ((src mat) size &key dst (interpolation :INTER-LINEAR))
   (let ((mat (or dst (make-mat))))
-    (%resize (cvo-ptr mat) (cvo-ptr mat) (cvo-ptr size)
+    (%resize (cvo-ptr src) (cvo-ptr mat) (cvo-ptr size)
              (const-kw-int interpolation *interpolation-flags*))
     mat))
