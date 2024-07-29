@@ -8,7 +8,7 @@
 
 @export
 (defun const-kw-int (kw alist)
-  (cadr (assoc kw alist)))
+  (cdr (assoc kw alist)))
 
 @export
 (defun const-int-kw (int alist)
