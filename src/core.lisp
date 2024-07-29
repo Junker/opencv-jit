@@ -49,8 +49,8 @@
 (defconstant +CV-16FC3+ 23)
 (defconstant +CV-16FC4+ 31)
 
-(defvar *mat-depths* `((:CV-8S . ,+CV-8S+)
-                       (:CV-8U . +CV-8U+)
+(defvar *mat-depths* `((:CV-8U . ,+CV-8U+)
+                       (:CV-8S . ,+CV-8S+)
                        (:CV-16F . ,+CV-16F+)
                        (:CV-16S . ,+CV-16S+)
                        (:CV-16U . ,+CV-16U+)
@@ -251,6 +251,11 @@
         (:CV-64FC2 (%mvec (%mat-at-3d-double2 ptr i0 i1 i2) :double 2))
         (:CV-64FC3 (%mvec (%mat-at-3d-double3 ptr i0 i1 i2) :double 3))
         (:CV-64FC4 (%mvec (%mat-at-3d-double4 ptr i0 i1 i2) :double 4))))))
+
+
+@export
+(defmethod mat-channels ((m mat))
+  (%mat-channels (cvo-ptr m)))
 
 @export
 (defmethod mat-col ((m mat) idx)
