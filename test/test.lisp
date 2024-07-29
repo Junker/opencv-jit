@@ -27,27 +27,27 @@
           '(vector (unsigned-byte 8))))
 
 (define-test size-create
-    (let ((s (opencv-jit/core:make-size 10 20)))
-      (is = (opencv-jit/core:size-width s) 10)
-      (is = (opencv-jit/core:size-height s) 20)))
+    (let ((s (make-size 10 20)))
+      (is = (size-width s) 10)
+      (is = (size-height s) 20)))
 
 (define-test scalar-create
-    (let ((s (opencv-jit/core:make-scalar 10 20 30 40)))
-      (is = (opencv-jit/core:scalar-val s 0) 10)
-      (is = (opencv-jit/core:scalar-val s 3) 40)))
+    (let ((s (make-scalar 10 20 30 40)))
+      (is = (scalar-val s 0) 10)
+      (is = (scalar-val s 3) 40)))
 
 (define-test rect-create
-    (let ((r (opencv-jit/core:make-rect 10 20 50 100)))
-      (is = (opencv-jit/core:rect-width r) 50)
-      (is = (opencv-jit/core:rect-y r) 20)))
+    (let ((r (make-rect 10 20 50 100)))
+      (is = (rect-width r) 50)
+      (is = (rect-y r) 20)))
 
 (define-test point-create
-    (let ((p (opencv-jit/core:make-point 10 20)))
-      (is = (opencv-jit/core:point-x p) 10)
-      (is = (opencv-jit/core:point-y p) 20)))
+    (let ((p (make-point 10 20)))
+      (is = (point-x p) 10)
+      (is = (point-y p) 20)))
 
 (define-test imdecode
-    (let* ((mat (opencv-jit/imgcodecs:imdecode *tux8-png-data*))
+    (let* ((mat (imdecode *tux8-png-data*))
            (size (mat-size mat)))
       (is = (mat-total mat) 64)
       (is = (mat-rows mat) 8)
@@ -55,6 +55,7 @@
       (is = (size-width size) 8)
       (is = (size-height size) 8)
       (is = (mat-channels mat) 3)
+      (is = (mat-dims mat) 2)
       (is eq (mat-depth mat) :CV-8U)))
 
 (define-test imread
@@ -65,7 +66,7 @@
                                :element-type '(unsigned-byte 8))
       (write-sequence *tux8-png-data* stream)
       (finish-output stream)
-      (let* ((mat (opencv-jit/imgcodecs:imread path))
+      (let* ((mat (imread path))
              (size (mat-size mat)))
         (is = (mat-total mat) 64)
         (is = (mat-rows mat) 8)
@@ -73,13 +74,30 @@
         (is = (size-width size) 8)
         (is = (size-height size) 8)
         (is = (mat-channels mat) 3)
+        (is = (mat-dims mat) 2)
         (is eq (mat-depth mat) :CV-8U))))
 
 (define-test imwrite
     (uiop:with-temporary-file (:pathname path
                                :type "bmp"
                                :element-type '(unsigned-byte 8))
-      (imwrite path (opencv-jit/imgcodecs:imdecode *tux8-png-data*))
+      (imwrite path (imdecode *tux8-png-data*))
       (is equalp
           (alexandria:read-file-into-byte-vector path)
           *tux8-bmp-data*)))
+
+(define-test mat-at
+    (let* ((mat (imdecode *tux8-png-data* :IMREAD-GRAYSCALE)))
+      (is = (mat-at mat 0 0) 0)
+      (is = (mat-at mat 4 4) 252)))
+
+(define-test vec-mat-at
+    (let* ((mat (imdecode *tux8-png-data*))
+           (v1 (mat-at mat 0 0))
+           (v2 (mat-at mat 4 4)))
+      (is = (vec-len v1) 3)
+      (is eq (vec-type v1) :uchar)
+      (is = (vec-val v1 0) 0)
+      (is = (vec-val v1 1) 0)
+      (is = (vec-val v2 0) 251)
+      (is = (vec-val v2 1) 253)))
