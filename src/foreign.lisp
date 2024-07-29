@@ -85,7 +85,6 @@
         :%vec-ushort2-delete "[](cv::Vec2w *vec){delete vec;}"
         :%vec-ushort3-delete "[](cv::Vec3w *vec){delete vec;}"
         :%vec-ushort4-delete "[](cv::Vec4w *vec){delete vec;}"
-
         ;; ======== Size
         :%new-size "[](){return new cv::Size();}"
         :%new-size-from-size "[](cv::Size *sz){return new cv::Size(*sz);}"
@@ -151,7 +150,6 @@
         :%mat-at-3d-int4 "[](cv::Mat *mat, int i0, int i1, int i2){return new cv::Vec4i(mat->at<cv::Vec4i>(i0,i1,i2));}"
         :%mat-at-3d-float4 "[](cv::Mat *mat, int i0, int i1, int i2){return new cv::Vec4f(mat->at<cv::Vec4f>(i0,i1,i2));}"
         :%mat-at-3d-double4 "[](cv::Mat *mat, int i0, int i1, int i2){return new cv::Vec4d(mat->at<cv::Vec4d>(i0,i1,i2));}"
-
         :%mat-empty "[](cv::Mat *mat){return mat->empty();}"
         :%mat-clone "[](cv::Mat *mat){return new cv::Mat(mat->clone());}"
         :%mat-channels "[](cv::Mat *mat){return mat->channels();}"

@@ -104,12 +104,15 @@
    :ptr (error "PTR required.")))
 
 ;; == Vec
+(deftype vectype () '(member :uchar :schar :double :float :int :short :ushort))
+
 @export-class
 (defclass vec (cvo)
   ((len :initarg :len
         :reader vec-len)
    (type :initarg :type
-         :reader vec-type))
+         :reader vec-type
+         :type vectype))
   (:default-initargs
    :len (error "LEN required.")
    :type (error "TYPE required.")))
@@ -192,7 +195,7 @@
           (when (> (vec-len v) 2)
             (list (vec-val v 2)))
           (when (> (vec-len v) 3)
-            (list (vec-val v 4)))))
+            (list (vec-val v 3)))))
 @export
 (defmethod vec-to-vector ((v vec))
   (make-array (vec-len v)
@@ -358,6 +361,14 @@
 @export
 (defmethod scalar-val ((sc scalar) idx)
   (vec-val sc idx))
+
+@export
+(defmethod scalar-to-list ((sc scalar))
+  (vec-to-list sc))
+
+@export
+(defmethod scalar-to-vector ((sc scalar))
+  (vec-to-vector sc))
 
 ;; == Point
 @export
