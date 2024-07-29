@@ -103,6 +103,89 @@
   (:default-initargs
    :ptr (error "PTR required.")))
 
+;; == Vec
+@export-class
+(defclass vec (cvo)
+  ((len :initarg :len
+        :accessor vec-len)
+   (type :initarg :type
+         :accessor vec-type))
+  (:default-initargs
+   :len (error "LEN required.")
+   :type (error "TYPE required.")))
+
+(defmethod initialize-instance :after ((v vec) &key)
+  (let ((ptr (cvo-ptr v))
+        (type (vec-type v))
+        (len (vec-len v)))
+    (trivial-garbage:finalize v
+                              (lambda ()
+                                (case type
+                                  (:uchar (case len
+                                            (2 (%vec-uchar2-delete ptr))
+                                            (3 (%vec-uchar3-delete ptr))
+                                            (4 (%vec-uchar4-delete ptr))))
+                                  (:schar (case len
+                                            (2 (%vec-schar2-delete ptr))
+                                            (3 (%vec-schar3-delete ptr))
+                                            (4 (%vec-schar4-delete ptr))))
+                                  (:double (case len
+                                             (2 (%vec-double2-delete ptr))
+                                             (3 (%vec-double3-delete ptr))
+                                             (4 (%vec-double4-delete ptr))))
+                                  (:float (case len
+                                            (2 (%vec-float2-delete ptr))
+                                            (3 (%vec-float3-delete ptr))
+                                            (4 (%vec-float4-delete ptr))))
+                                  (:int (case len
+                                          (2 (%vec-int2-delete ptr))
+                                          (3 (%vec-int3-delete ptr))
+                                          (4 (%vec-int4-delete ptr))))
+                                  (:short (case len
+                                            (2 (%vec-short2-delete ptr))
+                                            (3 (%vec-short3-delete ptr))
+                                            (4 (%vec-short4-delete ptr))))
+                                  (:ushort (case len
+                                             (2 (%vec-ushort2-delete ptr))
+                                             (3 (%vec-ushort3-delete ptr))
+                                             (4 (%vec-ushort4-delete ptr)))))))))
+
+@export
+(defmethod vec-val ((v vec) i)
+  (assert (< i (vec-len v)))
+  (let ((ptr (cvo-ptr v))
+        (type (vec-type v))
+        (len (vec-len v)))
+    (case type
+      (:uchar (case len
+                (2 (%vec-uchar2-val ptr i))
+                (3 (%vec-uchar3-val ptr i))
+                (4 (%vec-uchar4-val ptr i))))
+      (:schar (case len
+                (2 (%vec-schar2-val ptr i))
+                (3 (%vec-schar3-val ptr i))
+                (4 (%vec-schar4-val ptr i))))
+      (:double (case len
+                 (2 (%vec-double2-val ptr i))
+                 (3 (%vec-double3-val ptr i))
+                 (4 (%vec-double4-val ptr i))))
+      (:float (case len
+                (2 (%vec-float2-val ptr i))
+                (3 (%vec-float3-val ptr i))
+                (4 (%vec-float4-val ptr i))))
+      (:int (case len
+              (2 (%vec-int2-val ptr i))
+              (3 (%vec-int3-val ptr i))
+              (4 (%vec-int4-val ptr i))))
+      (:short (case len
+                (2 (%vec-short2-val ptr i))
+                (3 (%vec-short3-val ptr i))
+                (4 (%vec-short4-val ptr i))))
+      (:ushort (case len
+                 (2 (%vec-ushort2-val ptr i))
+                 (3 (%vec-ushort3-val ptr i))
+                 (4 (%vec-ushort4-val ptr i)))))))
+
 ;; == Mat
 @export
 (defclass mat (cvo) ())
@@ -129,39 +212,45 @@
                    :ptr mat)))
 
 @export
-(defmethod mat-at ((mat mat) i0 &optional (i1 nil i1p) (i2 nil i2p))
-  (let* ((ptr (cvo-ptr mat))
-         (depth (%mat-depth ptr)))
-    (cond (i2p
-           (ecase depth
-             (+CV-8U+ (%mat-at-3d-uchar ptr i0 i1 i2))
-             (+CV-8S+ (%mat-at-3d-schar ptr i0 i1 i2))
-             (+CV-16U+ (%mat-at-3d-ushort ptr i0 i1 i2))
-             (+CV-16S+ (%mat-at-3d-short ptr i0 i1 i2))
-             (+CV-32S+ (%mat-at-3d-int ptr i0 i1 i2))
-             (+CV-32F+ (%mat-at-3d-float ptr i0 i1 i2))
-             (+CV-64F+ (%mat-at-3d-double ptr i0 i1 i2))))
-          (i1p
-           (ecase depth
-             (+CV-8U+ (%mat-at-2d-uchar ptr i0 i1))
-             (+CV-8S+ (%mat-at-2d-schar ptr i0 i1))
-             (+CV-16U+ (%mat-at-2d-ushort ptr i0 i1))
-             (+CV-16S+ (%mat-at-2d-short ptr i0 i1))
-             (+CV-32S+ (%mat-at-2d-int ptr i0 i1))
-             (+CV-32F+ (%mat-at-2d-float ptr i0 i1))
-             (+CV-64F+ (%mat-at-2d-double ptr i0 i1))))
-          (t
-           (ecase depth
-             (+CV-8U+ (%mat-at-1d-uchar ptr i0))
-             (+CV-8S+ (%mat-at-1d-schar ptr i0))
-             (+CV-16U+ (%mat-at-1d-ushort ptr i0))
-             (+CV-16S+ (%mat-at-1d-short ptr i0))
-             (+CV-32S+ (%mat-at-1d-int ptr i0))
-             (+CV-32F+ (%mat-at-1d-float ptr i0))
-             (+CV-64F+ (%mat-at-1d-double ptr i0)))))))
-@export
-(defmethod mat-channels ((mat mat))
-  (%mat-channels (cvo-ptr mat)))
+(defmethod mat-at ((m mat) i0 &optional (i1 0 i1p) (i2 0 i2p))
+  (let* ((ptr (cvo-ptr m))
+         (type (mat-type m))
+         (dims (mat-dims m)))
+    (assert (case dims
+              (1 (not i1p))
+              (2 (and i1p (not i2p)))
+              (3 i1p i2p)))
+    (flet ((%mvec (ptr type len)
+             (make-instance 'vec :ptr ptr :type type :len len)))
+      (ecase type
+        (:CV-8UC1 (%mat-at-3d-uchar ptr i0 i1 i2))
+        (:CV-8UC2 (%mvec (%mat-at-3d-uchar2 ptr i0 i1 i2) :uchar 2))
+        (:CV-8UC3 (%mvec (%mat-at-3d-uchar3 ptr i0 i1 i2) :uchar 3))
+        (:CV-8UC4 (%mvec (%mat-at-3d-uchar4 ptr i0 i1 i2) :uchar 4))
+        (:CV-8SC1 (%mat-at-3d-schar ptr i0 i1 i2))
+        (:CV-8SC2 (%mvec (%mat-at-3d-schar2 ptr i0 i1 i2) :schar 2))
+        (:CV-8SC3 (%mvec (%mat-at-3d-schar3 ptr i0 i1 i2) :schar 3))
+        (:CV-8SC4 (%mvec (%mat-at-3d-schar4 ptr i0 i1 i2) :schar 4))
+        (:CV-16UC1 (%mat-at-3d-ushort ptr i0 i1 i2))
+        (:CV-16UC2 (%mvec (%mat-at-3d-ushort2 ptr i0 i1 i2) :ushort 2))
+        (:CV-16UC3 (%mvec (%mat-at-3d-ushort3 ptr i0 i1 i2) :ushort 3))
+        (:CV-16UC4 (%mvec (%mat-at-3d-ushort4 ptr i0 i1 i2) :ushort 4))
+        (:CV-16SC1 (%mat-at-3d-short ptr i0 i1 i2))
+        (:CV-16SC2 (%mvec (%mat-at-3d-short2 ptr i0 i1 i2) :short 2))
+        (:CV-16SC3 (%mvec (%mat-at-3d-short3 ptr i0 i1 i2) :short 3))
+        (:CV-16SC4 (%mvec (%mat-at-3d-short4 ptr i0 i1 i2) :short 4))
+        (:CV-32SC1 (%mat-at-3d-int ptr i0 i1 i2))
+        (:CV-32SC2 (%mvec (%mat-at-3d-int2 ptr i0 i1 i2) :int 2))
+        (:CV-32SC3 (%mvec (%mat-at-3d-int3 ptr i0 i1 i2) :int 3))
+        (:CV-32SC4 (%mvec (%mat-at-3d-int4 ptr i0 i1 i2) :int 4))
+        (:CV-32FC1 (%mat-at-3d-float ptr i0 i1 i2))
+        (:CV-32FC2 (%mvec (%mat-at-3d-float2 ptr i0 i1 i2) :float 2))
+        (:CV-32FC3 (%mvec (%mat-at-3d-float3 ptr i0 i1 i2) :float 3))
+        (:CV-32FC4 (%mvec (%mat-at-3d-float4 ptr i0 i1 i2) :float 4))
+        (:CV-64FC1 (%mat-at-3d-double ptr i0 i1 i2))
+        (:CV-64FC2 (%mvec (%mat-at-3d-double2 ptr i0 i1 i2) :double 2))
+        (:CV-64FC3 (%mvec (%mat-at-3d-double3 ptr i0 i1 i2) :double 3))
+        (:CV-64FC4 (%mvec (%mat-at-3d-double4 ptr i0 i1 i2) :double 4))))))
 
 @export
 (defmethod mat-col ((mat mat) idx)
