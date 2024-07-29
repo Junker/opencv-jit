@@ -5,6 +5,8 @@
                 #:strcat))
 (in-package #:opencv-jit/foreign)
 
+(cl-annot:enable-annot-syntax)
+
 (setf cxx-jit:*cxx-compiler-link-libs* (uiop:run-program "pkg-config --libs opencv4"
                                                          :output '(:string :stripped t)))
 
@@ -29,8 +31,9 @@
         :%bilateral-filter "[](cv::Mat *src, cv::Mat *dst, int d, double sc, double ss){cv::bilateralFilter(*src, *dst, d, sc, ss);}"
         :%resize "[](cv::Mat *src, cv::Mat *dst, cv::Size *dsize, int interpolation){cv::resize(*src, *dst, *dsize, interpolation);}"
         ;; ======== ImgCodecs
+        :%imdecode "[](uchar *buf, size_t size, int flags){return new cv::Mat(cv::imdecode(std::vector<uchar>(buf, buf + size), flags));}"
         :%imread "[](std::string filename, int flags){return new cv::Mat(cv::imread(filename, flags));}"
-        :%imwrite "[](std::string filename, cv::Mat *img){return cv::imwrite(filename, *img);}"
+        :%imwrite "[](std::string filename, cv::Mat *img, int *params, uint params_size){return cv::imwrite(filename, *img, std::vector<int>(params, params + params_size));}"
         ;; ======== HighGUI
         :%imshow "[](std::string wname, cv::Mat *mat){cv::imshow(wname, *mat);}"
         :%waitkey "[](int delay = 0){return cv::waitKey(delay);}"

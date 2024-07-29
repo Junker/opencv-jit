@@ -14,3 +14,8 @@
 (defun const-int-kw (int alist)
   (car (rassoc int alist)))
 
+@export
+(defmacro defconstant-exp (name val)
+  `(progn
+     (export (quote ,name))
+     (defconstant ,name ,val)))

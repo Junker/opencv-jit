@@ -2,9 +2,11 @@
   (:use #:cl
         #:cl-annot
         #:cl-annot.class
-        #:opencv-jit/foreign
         #:opencv-jit/util
-        #:opencv-jit/core))
+        #:opencv-jit/foreign
+        #:opencv-jit/core)
+  (:import-from #:trivial-types
+                #:property-list-p))
 (in-package :opencv-jit/imgcodecs)
 
 (cl-annot:enable-annot-syntax)
@@ -45,6 +47,90 @@
 (defconstant +IMWRITE-TIFF-YDPI+ 258)
 (defconstant +IMWRITE-TIFF-COMPRESSION+ 259)
 
+;; ImwriteEXRCompressionFlags
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-NO+ 0)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-RLE+ 1)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-ZIPS+ 2)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-ZIP+ 3)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-PIZ+ 4)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-PXR24+ 5)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-B44+ 6)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-B44A+ 7)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-DWAA+ 8)
+(defconstant-exp +IMWRITE-EXR-COMPRESSION-DWAB+ 9)
+
+;; ImwriteEXRTypeFlags
+(defconstant-exp +IMWRITE-EXR-TYPE-HALF+ 1)
+(defconstant-exp +IMWRITE-EXR-TYPE-FLOAT+ 2)
+
+;; ImwriteHDRCompressionFlags
+(defconstant-exp +IMWRITE-HDR-COMPRESSION-NONE+ 0)
+(defconstant-exp +IMWRITE-HDR-COMPRESSION-RLE+ 1)
+
+;; ImwriteJPEGSamplingFactorParams
+(defconstant-exp +IMWRITE-JPEG-SAMPLING-FACTOR-411+ #x411111)
+(defconstant-exp +IMWRITE-JPEG-SAMPLING-FACTOR-420+ #x221111)
+(defconstant-exp +IMWRITE-JPEG-SAMPLING-FACTOR-422+ #x211111)
+(defconstant-exp +IMWRITE-JPEG-SAMPLING-FACTOR-440+ #x121111)
+(defconstant-exp +IMWRITE-JPEG-SAMPLING-FACTOR-444+ #x111111)
+
+
+;; ImwritePAMFlags
+(defconstant-exp +IMWRITE-PAM-FORMAT-NULL+ 0)
+(defconstant-exp +IMWRITE-PAM-FORMAT-BLACKANDWHITE+ 1)
+(defconstant-exp +IMWRITE-PAM-FORMAT-GRAYSCALE+ 2)
+(defconstant-exp +IMWRITE-PAM-FORMAT-GRAYSCALE-ALPHA+ 3)
+(defconstant-exp +IMWRITE-PAM-FORMAT-RGB+ 4)
+(defconstant-exp +IMWRITE-PAM-FORMAT-RGB-ALPHA+ 5)
+
+
+;; ImwritePNGFlags
+(defconstant-exp +IMWRITE-PNG-STRATEGY-DEFAULT+ 0)
+(defconstant-exp +IMWRITE-PNG-STRATEGY-FILTERED+ 1)
+(defconstant-exp +IMWRITE-PNG-STRATEGY-HUFFMAN-ONLY+ 2)
+(defconstant-exp +IMWRITE-PNG-STRATEGY-RLE+ 3)
+(defconstant-exp +IMWRITE-PNG-STRATEGY-FIXED+ 4)
+
+;; ImwriteTiffCompressionFlags
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-NONE+ 1)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-CCITTRLE+ 2)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-CCITTFAX3+ 3)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-CCITT-T4+ 3)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-CCITTFAX4+ 4)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-CCITT-T6+ 4)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-LZW+ 5)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-OJPEG+ 6)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-JPEG+ 7)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-T85+ 9)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-T43+ 10)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-NEXT+ 32766)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-CCITTRLEW+ 32771)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-PACKBITS+ 32773)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-THUNDERSCAN+ 32809)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-IT8CTPAD+ 32895)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-IT8LW+ 32896)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-IT8MP+ 32897)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-IT8BL+ 32898)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-PIXARFILM+ 32908)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-PIXARLOG+ 32909)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-DEFLATE+ 32946)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-ADOBE-DEFLATE+ 8)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-DCS+ 32947)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-JBIG+ 34661)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-SGILOG+ 34676)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-SGILOG24+ 34677)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-JP2000+ 34712)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-LERC+ 34887)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-LZMA+ 34925)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-ZSTD+ 50000)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-WEBP+ 50001)
+(defconstant-exp +IMWRITE-TIFF-COMPRESSION-JXL+ 50002)
+
+;; ImwriteTiffPredictorFlags
+(defconstant-exp +IMWRITE-TIFF-PREDICTOR-NONE+ 1)
+(defconstant-exp +IMWRITE-TIFF-PREDICTOR-HORIZONTAL+ 2)
+(defconstant-exp +IMWRITE-TIFF-PREDICTOR-FLOATINGPOINT+ 3)
+
 (defvar *imread-modes*
   `((:IMREAD-UNCHANGED . ,+IMREAD-UNCHANGED+)
     (:IMREAD-GRAYSCALE . ,+IMREAD-GRAYSCALE+)
@@ -81,15 +167,36 @@
     (:IMWRITE-TIFF-YDPI . ,+IMWRITE-TIFF-YDPI+)
     (:IMWRITE-TIFF-COMPRESSION . ,+IMWRITE-TIFF-COMPRESSION+)))
 
+
+
 @export
-(defun imread (path &optional (mode :IMREAD-COLOR))
+(defun imdecode (data  &optional (flag :IMREAD-COLOR))
+  (check-type data (vector (unsigned-byte 8)))
+  (cffi:with-foreign-array (pointer data (list :array :uchar (length data)))
+    (make-instance 'mat
+                   :ptr (%imdecode pointer
+                                   (length data)
+                                   (const-kw-int flag *imread-modes*)))))
+@export
+(defun imread (path &optional (flag :IMREAD-COLOR))
   (make-instance 'mat
                  :ptr (%imread (etypecase path
                                  (pathname (namestring path))
                                  (string path))
-                               (const-kw-int mode *imread-modes*))))
+                               (const-kw-int flag *imread-modes*))))
 
 @export
 (defun imwrite (path img &rest params)
-  (declare (ignore params)) ; TODO TEMP
-  (%imwrite path (cvo-ptr img)))
+  (assert (property-list-p params))
+  (let ((prep-params (mapcar (lambda (el)
+                               (if (keywordp el)
+                                   (const-kw-int el *imwrite-flags*)
+                                   el))
+                             params)))
+    (cffi:with-foreign-array (flags-ptr
+                              (coerce prep-params 'vector)
+                              (list :array :int (length params)))
+      (%imwrite (etypecase path
+                  (pathname (namestring path))
+                  (string path))
+                (cvo-ptr img) flags-ptr (length params)))))
