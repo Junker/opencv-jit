@@ -159,6 +159,18 @@
              (+CV-32S+ (%mat-at-1d-int ptr i0))
              (+CV-32F+ (%mat-at-1d-float ptr i0))
              (+CV-64F+ (%mat-at-1d-double ptr i0)))))))
+@export
+(defmethod mat-channels ((mat mat))
+  (%mat-channels (cvo-ptr mat)))
+
+@export
+(defmethod mat-col ((mat mat) idx)
+  (make-instance 'mat
+                 :ptr (%mat-col (cvo-ptr mat) idx)))
+
+@export
+(defmethod mat-cols ((mat mat))
+  (%mat-cols (cvo-ptr mat)))
 
 @export
 (defmethod mat-depth ((mat mat))
@@ -168,6 +180,15 @@
 @export
 (defmethod mat-empty-p ((mat mat))
   (%mat-empty (cvo-ptr mat)))
+
+@export
+(defmethod mat-row ((mat mat) idx)
+  (make-instance 'mat
+                 :ptr (%mat-row (cvo-ptr mat) idx)))
+
+@export
+(defmethod mat-rows ((mat mat))
+  (%mat-rows (cvo-ptr mat)))
 
 @export
 (defmethod mat-total ((mat mat))
