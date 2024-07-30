@@ -66,9 +66,9 @@
   subtract mean values, scales values by scale-factor, swap Blue and Red channels."
   (make-instance 'mat
                  :ptr (%dnn-blob-from-image (cvo-ptr image)
-                                            scale-factor
-                                            (or size (%new-size))
-                                            (or mean (%new-scalar))
+                                            (coerce scale-factor 'double-float)
+                                            (cvo-ptr (or size (make-size)))
+                                            (cvo-ptr (or mean (make-scalar)))
                                             swap-rb
                                             crop)))
 
@@ -77,10 +77,13 @@
 
 @export
 (defmethod net-set-input ((n net) input &key (name "") (scale-factor 1.0) mean)
-  (%dnn-net-set-input (cvo-ptr n) (cvo-ptr input)
-                      name scale-factor (or mean (make-scalar))))
+  (%dnn-net-set-input (cvo-ptr n)
+                      (cvo-ptr input)
+                      name
+                      (coerce scale-factor 'double-float)
+                      (cvo-ptr (or mean (make-scalar)))))
 
 @export
-(defmethod net-forward ((n net) name)
+(defmethod net-forward ((n net) &optional (output-name ""))
   (make-instance 'mat
-                 :ptr (%dnn-net-forward n name)))
+                 :ptr (%dnn-net-forward n output-name)))

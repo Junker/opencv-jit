@@ -19,12 +19,14 @@
 
 
 @export
-(defun make-face-detector-yn (model config size &key (score-threshold 0.9)
-                                                  (nms-threshold 0.3) (top-k 5000)
+(defun make-face-detector-yn (model config size &key (score-threshold 0.9d0)
+                                                  (nms-threshold 0.3d0) (top-k 5000)
                                                   (backend-id 0) (target-id 0))
   (make-instance 'face-detector-yn
-                 :ptr (%face-detector-yn-create model config (cvo-ptr size) score-threshold
-                                                nms-threshold top-k backend-id target-id)))
+                 :ptr (%face-detector-yn-create model config (cvo-ptr size)
+                                                (coerce score-threshold 'float)
+                                                (coerce nms-threshold 'float)
+                                                top-k backend-id target-id)))
 
 @export
 (defmethod face-detector-yn-set-input-size ((fyn face-detector-yn) size)

@@ -390,9 +390,9 @@
 @export
 (defclass point (cvo) ())
 
-(defmethod initialize-instance :after ((pt point) &key)
-  (let ((ptr (cvo-ptr pt)))
-    (trivial-garbage:finalize pt
+(defmethod initialize-instance :after ((p point) &key)
+  (let ((ptr (cvo-ptr p)))
+    (trivial-garbage:finalize p
                               (lambda () (%point-delete ptr)))))
 
 (defmethod print-object ((p point) out)
