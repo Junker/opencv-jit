@@ -157,6 +157,10 @@
                                              (3 (%vec-ushort3-delete ptr))
                                              (4 (%vec-ushort4-delete ptr)))))))))
 
+(defmethod print-object ((v vec) out)
+  (print-unreadable-object (v out :type t)
+    (format out "<~(~A~),~D>(~{~A~^ ~})" (vec-type v) (vec-len v) (vec-to-list v))))
+
 @export
 (defmethod vec-val ((v vec) i)
   (assert (< i (vec-len v)))
@@ -216,6 +220,10 @@
   (let ((ptr (cvo-ptr m)))
     (trivial-garbage:finalize m
                               (lambda () (%mat-release ptr)))))
+
+(defmethod print-object ((m mat) out)
+  (print-unreadable-object (m out :type t :identity t)
+    (format out "(:DIMS ~D :TYPE ~A :TOTAL ~D)" (mat-dims m) (mat-type m) (mat-total m))))
 
 @export
 (defun make-mat ()
@@ -330,6 +338,10 @@
     (trivial-garbage:finalize sz
                               (lambda () (%size-delete ptr)))))
 
+(defmethod print-object ((s size) out)
+  (print-unreadable-object (s out :type t)
+    (format out "(:WIDTH ~D :HEIGHT ~D)" (size-width s) (size-height s))))
+
 @export
 (defun make-size (&optional (width 0) (height 0))
   (make-instance 'size
@@ -383,6 +395,10 @@
     (trivial-garbage:finalize pt
                               (lambda () (%point-delete ptr)))))
 
+(defmethod print-object ((p point) out)
+  (print-unreadable-object (p out :type t)
+    (format out "(:X ~D :Y ~D)" (point-x p) (point-y p))))
+
 @export
 (defun make-point (&optional (x 0) (y 0))
   (make-instance 'point :ptr (%new-point-xy x y)))
@@ -405,6 +421,11 @@
   (let ((ptr (cvo-ptr r)))
     (trivial-garbage:finalize r
                               (lambda () (%rect-delete ptr)))))
+
+(defmethod print-object ((r rect) out)
+  (print-unreadable-object (r out :type t)
+    (format out "(:WIDTH ~D :HEIGHT ~D :X ~D :Y ~D)"
+            (rect-width r) (rect-height r) (rect-x r) (rect-y r))))
 
 @export
 (defun make-rect (&optional (x 0) (y 0) (width 0) (height 0))
