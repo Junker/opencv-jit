@@ -206,7 +206,7 @@
         ;; methods
         :%dnn-net-delete "[](cv::dnn::Net *net){delete net;}"
         :%dnn-net-forward "[](cv::dnn::Net *net, std::string name){return new cv::Mat(net->forward(name));}"
-        :%dnn-net-set-input "[](cv::dnn::Net *net, cv::Mat input, std::string name, double scale, cv::Scalar mean){return net->setInput(input, name, scale, mean);}"
+        :%dnn-net-set-input "[](cv::dnn::Net *net, cv::Mat input, std::string name, double scale, cv::Scalar mean){net->setInput(input, name, scale, mean);}"
         ;; ======== FaceDetectorYN
         :%face-detector-yn-create "[](std::string model, std::string config, cv::Size *input_size, float score_threashold, float nms_threshold, int top_k, int backend_id, int target_id){return cv::FaceDetectorYN::create(model,config,*input_size,score_threashold,nms_threshold,top_k,backend_id, target_id);}"
         :%face-detector-yn-detect "[](cv::FaceDetectorYN *fyn, cv::Mat *image){cv::Mat *faces = new cv::Mat(); fyn->detect(*image,*faces); return faces;}"
