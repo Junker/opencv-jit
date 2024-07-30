@@ -210,4 +210,5 @@
         ;; ======== FaceDetectorYN
         :%face-detector-yn-create "[](std::string model, std::string config, cv::Size *input_size, float score_threashold, float nms_threshold, int top_k, int backend_id, int target_id){return cv::FaceDetectorYN::create(model,config,*input_size,score_threashold,nms_threshold,top_k,backend_id, target_id);}"
         :%face-detector-yn-detect "[](cv::FaceDetectorYN *fyn, cv::Mat *image){cv::Mat *faces = new cv::Mat(); fyn->detect(*image,*faces); return faces;}"
-        :%face-detector-set-input-size "[](cv::FaceDetectorYN *fyn, cv::Size *input_size){return fyn->setInputSize(*input_size);}"))
+        :%face-detector-yn-set-input-size "[](cv::FaceDetectorYN *fyn, cv::Size *input_size){return fyn->setInputSize(*input_size);}"
+        :%face-detector-yn-delete "[](cv::FaceDetectorYN *fyn){delete fyn;}"))
