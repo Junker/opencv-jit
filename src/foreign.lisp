@@ -37,11 +37,11 @@
         ;; ======== HighGUI
         :%imshow "[](std::string wname, cv::Mat *mat){cv::imshow(wname, *mat);}"
         :%waitkey "[](int delay = 0){return cv::waitKey(delay);}"
-        :%window-new "[](std::string wname, int flags){cv::namedWindow(wname, flags);}"
-        :%window-close "[](std::string wname){cv::destroyWindow(wname);}"
-        :%window-move "[](std::string wname, int x, int y){cv::moveWindow(wname, x, y);}"
-        :%window-resize "[](std::string wname, int w, int h){cv::resizeWindow(wname, w, h);}"
-        :%window-set-title "[](std::string wname, std::string title){cv::setWindowTitle(wname, title);}"
+        :%named-window "[](std::string wname, int flags){cv::namedWindow(wname, flags);}"
+        :%destroy-window "[](std::string wname){cv::destroyWindow(wname);}"
+        :%move-window "[](std::string wname, int x, int y){cv::moveWindow(wname, x, y);}"
+        :%resize-window "[](std::string wname, int w, int h){cv::resizeWindow(wname, w, h);}"
+        :%set-window-title "[](std::string wname, std::string title){cv::setWindowTitle(wname, title);}"
         ;; ======== Vec
         :%vec-uchar2-val "[](cv::Vec2b *vec, int i){return vec->val[i];}"
         :%vec-uchar3-val "[](cv::Vec3b *vec, int i){return vec->val[i];}"
