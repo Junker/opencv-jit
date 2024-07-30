@@ -56,7 +56,7 @@
       (is = (size-height size) 8)
       (is = (mat-channels mat) 3)
       (is = (mat-dims mat) 2)
-      (is eq (mat-depth mat) :CV-8U)))
+      (is eq (mat-depth mat) :8U)))
 
 (define-test imread
     (uiop:with-temporary-file (:stream stream
@@ -75,7 +75,7 @@
         (is = (size-height size) 8)
         (is = (mat-channels mat) 3)
         (is = (mat-dims mat) 2)
-        (is eq (mat-depth mat) :CV-8U))))
+        (is eq (mat-depth mat) :8U))))
 
 (define-test imwrite
     (uiop:with-temporary-file (:pathname path
@@ -87,7 +87,7 @@
           *tux8-bmp-data*)))
 
 (define-test mat-at
-    (let* ((mat (imdecode *tux8-png-data* :IMREAD-GRAYSCALE)))
+    (let* ((mat (imdecode *tux8-png-data* :GRAYSCALE)))
       (is = (mat-at mat 0 0) 0)
       (is = (mat-at mat 4 4) 252)))
 

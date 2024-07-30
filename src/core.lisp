@@ -49,47 +49,49 @@
 (defconstant +CV-16FC3+ 23)
 (defconstant +CV-16FC4+ 31)
 
-(defvar *mat-depths* `((:CV-8U . ,+CV-8U+)
-                       (:CV-8S . ,+CV-8S+)
-                       (:CV-16F . ,+CV-16F+)
-                       (:CV-16S . ,+CV-16S+)
-                       (:CV-16U . ,+CV-16U+)
-                       (:CV-32F . ,+CV-32F+)
-                       (:CV-32S . ,+CV-32S+)
-                       (:CV-64F . ,+CV-64F+)))
+@export
+(defvar *mat-depths* `((:8U . ,+CV-8U+)
+                       (:8S . ,+CV-8S+)
+                       (:16F . ,+CV-16F+)
+                       (:16S . ,+CV-16S+)
+                       (:16U . ,+CV-16U+)
+                       (:32F . ,+CV-32F+)
+                       (:32S . ,+CV-32S+)
+                       (:64F . ,+CV-64F+)))
 
-(defvar *mat-types* `((:CV-8UC1 . ,+CV-8UC1+)
-                      (:CV-8UC2 . ,+CV-8UC2+)
-                      (:CV-8UC3 . ,+CV-8UC3+)
-                      (:CV-8UC4 . ,+CV-8UC4+)
-                      (:CV-8SC1 . ,+CV-8SC1+)
-                      (:CV-8SC2 . ,+CV-8SC2+)
-                      (:CV-8SC3 . ,+CV-8SC3+)
-                      (:CV-8SC4 . ,+CV-8SC4+)
-                      (:CV-16UC1 . ,+CV-16UC1+)
-                      (:CV-16UC2 . ,+CV-16UC2+)
-                      (:CV-16UC3 . ,+CV-16UC3+)
-                      (:CV-16UC4 . ,+CV-16UC4+)
-                      (:CV-16SC1 . ,+CV-16SC1+)
-                      (:CV-16SC2 . ,+CV-16SC2+)
-                      (:CV-16SC3 . ,+CV-16SC3+)
-                      (:CV-16SC4 . ,+CV-16SC4+)
-                      (:CV-32SC1 . ,+CV-32SC1+)
-                      (:CV-32SC2 . ,+CV-32SC2+)
-                      (:CV-32SC3 . ,+CV-32SC3+)
-                      (:CV-32SC4 . ,+CV-32SC4+)
-                      (:CV-32FC1 . ,+CV-32FC1+)
-                      (:CV-32FC2 . ,+CV-32FC2+)
-                      (:CV-32FC3 . ,+CV-32FC3+)
-                      (:CV-32FC4 . ,+CV-32FC4+)
-                      (:CV-64FC1 . ,+CV-64FC1+)
-                      (:CV-64FC2 . ,+CV-64FC2+)
-                      (:CV-64FC3 . ,+CV-64FC3+)
-                      (:CV-64FC4 . ,+CV-64FC4+)
-                      (:CV-16FC1 . ,+CV-16FC1+)
-                      (:CV-16FC2 . ,+CV-16FC2+)
-                      (:CV-16FC3 . ,+CV-16FC3+)
-                      (:CV-16FC4 . ,+CV-16FC4+)))
+@export
+(defvar *mat-types* `((:8UC1 . ,+CV-8UC1+)
+                      (:8UC2 . ,+CV-8UC2+)
+                      (:8UC3 . ,+CV-8UC3+)
+                      (:8UC4 . ,+CV-8UC4+)
+                      (:8SC1 . ,+CV-8SC1+)
+                      (:8SC2 . ,+CV-8SC2+)
+                      (:8SC3 . ,+CV-8SC3+)
+                      (:8SC4 . ,+CV-8SC4+)
+                      (:16UC1 . ,+CV-16UC1+)
+                      (:16UC2 . ,+CV-16UC2+)
+                      (:16UC3 . ,+CV-16UC3+)
+                      (:16UC4 . ,+CV-16UC4+)
+                      (:16SC1 . ,+CV-16SC1+)
+                      (:16SC2 . ,+CV-16SC2+)
+                      (:16SC3 . ,+CV-16SC3+)
+                      (:16SC4 . ,+CV-16SC4+)
+                      (:32SC1 . ,+CV-32SC1+)
+                      (:32SC2 . ,+CV-32SC2+)
+                      (:32SC3 . ,+CV-32SC3+)
+                      (:32SC4 . ,+CV-32SC4+)
+                      (:32FC1 . ,+CV-32FC1+)
+                      (:32FC2 . ,+CV-32FC2+)
+                      (:32FC3 . ,+CV-32FC3+)
+                      (:32FC4 . ,+CV-32FC4+)
+                      (:64FC1 . ,+CV-64FC1+)
+                      (:64FC2 . ,+CV-64FC2+)
+                      (:64FC3 . ,+CV-64FC3+)
+                      (:64FC4 . ,+CV-64FC4+)
+                      (:16FC1 . ,+CV-16FC1+)
+                      (:16FC2 . ,+CV-16FC2+)
+                      (:16FC3 . ,+CV-16FC3+)
+                      (:16FC4 . ,+CV-16FC4+)))
 
 
 (define-condition opencv-error (error)
@@ -103,7 +105,7 @@
   (:default-initargs
    :ptr (error "PTR required.")))
 
-;; == Vec
+;;  ===================== Vec
 (deftype vectype () '(member :uchar :schar :double :float :int :short :ushort))
 
 @export-class
@@ -201,7 +203,7 @@
   (make-array (vec-len v)
               :initial-contents (vec-to-list v)))
 
-;; == Mat
+;;  ===================== Mat
 @export
 (defclass mat (cvo) ())
 
@@ -238,34 +240,34 @@
     (flet ((%mvec (ptr type len)
              (make-instance 'vec :ptr ptr :type type :len len)))
       (ecase type
-        (:CV-8UC1 (%mat-at-3d-uchar ptr i0 i1 i2))
-        (:CV-8UC2 (%mvec (%mat-at-3d-uchar2 ptr i0 i1 i2) :uchar 2))
-        (:CV-8UC3 (%mvec (%mat-at-3d-uchar3 ptr i0 i1 i2) :uchar 3))
-        (:CV-8UC4 (%mvec (%mat-at-3d-uchar4 ptr i0 i1 i2) :uchar 4))
-        (:CV-8SC1 (%mat-at-3d-schar ptr i0 i1 i2))
-        (:CV-8SC2 (%mvec (%mat-at-3d-schar2 ptr i0 i1 i2) :schar 2))
-        (:CV-8SC3 (%mvec (%mat-at-3d-schar3 ptr i0 i1 i2) :schar 3))
-        (:CV-8SC4 (%mvec (%mat-at-3d-schar4 ptr i0 i1 i2) :schar 4))
-        (:CV-16UC1 (%mat-at-3d-ushort ptr i0 i1 i2))
-        (:CV-16UC2 (%mvec (%mat-at-3d-ushort2 ptr i0 i1 i2) :ushort 2))
-        (:CV-16UC3 (%mvec (%mat-at-3d-ushort3 ptr i0 i1 i2) :ushort 3))
-        (:CV-16UC4 (%mvec (%mat-at-3d-ushort4 ptr i0 i1 i2) :ushort 4))
-        (:CV-16SC1 (%mat-at-3d-short ptr i0 i1 i2))
-        (:CV-16SC2 (%mvec (%mat-at-3d-short2 ptr i0 i1 i2) :short 2))
-        (:CV-16SC3 (%mvec (%mat-at-3d-short3 ptr i0 i1 i2) :short 3))
-        (:CV-16SC4 (%mvec (%mat-at-3d-short4 ptr i0 i1 i2) :short 4))
-        (:CV-32SC1 (%mat-at-3d-int ptr i0 i1 i2))
-        (:CV-32SC2 (%mvec (%mat-at-3d-int2 ptr i0 i1 i2) :int 2))
-        (:CV-32SC3 (%mvec (%mat-at-3d-int3 ptr i0 i1 i2) :int 3))
-        (:CV-32SC4 (%mvec (%mat-at-3d-int4 ptr i0 i1 i2) :int 4))
-        (:CV-32FC1 (%mat-at-3d-float ptr i0 i1 i2))
-        (:CV-32FC2 (%mvec (%mat-at-3d-float2 ptr i0 i1 i2) :float 2))
-        (:CV-32FC3 (%mvec (%mat-at-3d-float3 ptr i0 i1 i2) :float 3))
-        (:CV-32FC4 (%mvec (%mat-at-3d-float4 ptr i0 i1 i2) :float 4))
-        (:CV-64FC1 (%mat-at-3d-double ptr i0 i1 i2))
-        (:CV-64FC2 (%mvec (%mat-at-3d-double2 ptr i0 i1 i2) :double 2))
-        (:CV-64FC3 (%mvec (%mat-at-3d-double3 ptr i0 i1 i2) :double 3))
-        (:CV-64FC4 (%mvec (%mat-at-3d-double4 ptr i0 i1 i2) :double 4))))))
+        (:8UC1 (%mat-at-3d-uchar ptr i0 i1 i2))
+        (:8UC2 (%mvec (%mat-at-3d-uchar2 ptr i0 i1 i2) :uchar 2))
+        (:8UC3 (%mvec (%mat-at-3d-uchar3 ptr i0 i1 i2) :uchar 3))
+        (:8UC4 (%mvec (%mat-at-3d-uchar4 ptr i0 i1 i2) :uchar 4))
+        (:8SC1 (%mat-at-3d-schar ptr i0 i1 i2))
+        (:8SC2 (%mvec (%mat-at-3d-schar2 ptr i0 i1 i2) :schar 2))
+        (:8SC3 (%mvec (%mat-at-3d-schar3 ptr i0 i1 i2) :schar 3))
+        (:8SC4 (%mvec (%mat-at-3d-schar4 ptr i0 i1 i2) :schar 4))
+        (:16UC1 (%mat-at-3d-ushort ptr i0 i1 i2))
+        (:16UC2 (%mvec (%mat-at-3d-ushort2 ptr i0 i1 i2) :ushort 2))
+        (:16UC3 (%mvec (%mat-at-3d-ushort3 ptr i0 i1 i2) :ushort 3))
+        (:16UC4 (%mvec (%mat-at-3d-ushort4 ptr i0 i1 i2) :ushort 4))
+        (:16SC1 (%mat-at-3d-short ptr i0 i1 i2))
+        (:16SC2 (%mvec (%mat-at-3d-short2 ptr i0 i1 i2) :short 2))
+        (:16SC3 (%mvec (%mat-at-3d-short3 ptr i0 i1 i2) :short 3))
+        (:16SC4 (%mvec (%mat-at-3d-short4 ptr i0 i1 i2) :short 4))
+        (:32SC1 (%mat-at-3d-int ptr i0 i1 i2))
+        (:32SC2 (%mvec (%mat-at-3d-int2 ptr i0 i1 i2) :int 2))
+        (:32SC3 (%mvec (%mat-at-3d-int3 ptr i0 i1 i2) :int 3))
+        (:32SC4 (%mvec (%mat-at-3d-int4 ptr i0 i1 i2) :int 4))
+        (:32FC1 (%mat-at-3d-float ptr i0 i1 i2))
+        (:32FC2 (%mvec (%mat-at-3d-float2 ptr i0 i1 i2) :float 2))
+        (:32FC3 (%mvec (%mat-at-3d-float3 ptr i0 i1 i2) :float 3))
+        (:32FC4 (%mvec (%mat-at-3d-float4 ptr i0 i1 i2) :float 4))
+        (:64FC1 (%mat-at-3d-double ptr i0 i1 i2))
+        (:64FC2 (%mvec (%mat-at-3d-double2 ptr i0 i1 i2) :double 2))
+        (:64FC3 (%mvec (%mat-at-3d-double3 ptr i0 i1 i2) :double 3))
+        (:64FC4 (%mvec (%mat-at-3d-double4 ptr i0 i1 i2) :double 4))))))
 
 
 @export
@@ -317,7 +319,7 @@
   (make-instance 'size
                  :ptr (%mat-size (cvo-ptr m))))
 
-;; == Size
+;;  ===================== Size
 @export
 (defclass size (cvo) ())
 
@@ -339,7 +341,7 @@
 (defmethod size-height ((sz size))
   (%size-height (cvo-ptr sz)))
 
-;; == Scalar
+;;  ===================== Scalar
 @export
 (defclass scalar (vec) ())
 
@@ -370,7 +372,7 @@
 (defmethod scalar-to-vector ((sc scalar))
   (vec-to-vector sc))
 
-;; == Point
+;;  ===================== Point
 @export
 (defclass point (cvo) ())
 
@@ -392,7 +394,8 @@
   (%point-y (cvo-ptr p)))
 
 
-;; == Rect
+;; ===================== Rect
+
 @export
 (defclass rect (cvo) ())
 
