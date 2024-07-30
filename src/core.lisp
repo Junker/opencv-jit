@@ -101,7 +101,8 @@
 @export-class
 (defclass cvo ()
   ((ptr :initarg :ptr
-        :reader cvo-ptr))
+        :reader cvo-ptr
+        :type system-area-pointer))
   (:default-initargs
    :ptr (error "PTR required.")))
 
@@ -111,7 +112,8 @@
 @export-class
 (defclass vec (cvo)
   ((len :initarg :len
-        :reader vec-len)
+        :reader vec-len
+        :type fixnum)
    (type :initarg :type
          :reader vec-type
          :type vectype))
