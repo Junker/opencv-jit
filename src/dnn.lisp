@@ -76,8 +76,20 @@
 ;; == METHODS
 
 @export
+(defmethod net-dump ((net net))
+  (%dnn-net-dump (cvo-ptr net)))
+
+@export
 (defmethod net-empty ((net net))
   (%dnn-net-empty (cvo-ptr net)))
+
+@export
+(defmethod net-enable-fusion ((net net) enablep)
+  (%dnn-net-enable-fusion (cvo-ptr net) enablep))
+
+@export
+(defmethod net-enable-winograd ((net net) enablep)
+  (%dnn-net-enable-winograd (cvo-ptr net) enablep))
 
 @export
 (defmethod net-set-input ((net net) input &key (name "") (scale-factor 1.0) mean)
@@ -86,6 +98,10 @@
                       name
                       (coerce scale-factor 'double-float)
                       (cvo-ptr (or mean (make-scalar)))))
+
+@export
+(defmethod net-set-input-shape ((net net) name shape)
+  (%dnn-net-set-input-shape (cvo-ptr net) name (cvo-ptr shape)))
 
 @export
 (defmethod net-forward ((net net) &optional (output-name ""))

@@ -193,9 +193,15 @@
         :%dnn-read-net-from-torch "[](std::string model, bool binary, bool evaluate){return new cv::dnn::Net(cv::dnn::readNetFromTorch(model, binary, evaluate));}"
         :%dnn-blob-from-image "[](cv::Mat *image, double scale_factor, cv::Size *sz, cv::Scalar *mean, bool swap_rb, bool crop){cv::Mat *output = new cv::Mat(); cv::dnn::blobFromImage(*image, *output, scale_factor, *sz, *mean, swap_rb, crop); return output;}"
         ;; methods
+        :%dnn-net-dump "[](cv::dnn::Net *net){return net->dump();}"
+        :%dnn-net-empty "[](cv::dnn::Net *net){return net->empty();}"
+        :%dnn-net-enable-fusion "[](cv::dnn::Net *net, bool fusion){net->enableWinograd(fusion);}"
+        :%dnn-net-enable-winograd "[](cv::dnn::Net *net, bool use_winograd){net->enableWinograd(use_winograd);}"
         :%dnn-net-delete "[](cv::dnn::Net *net){delete net;}"
         :%dnn-net-forward "[](cv::dnn::Net *net, std::string name){return new cv::Mat(net->forward(name));}"
-        :%dnn-net-set-input "[](cv::dnn::Net *net, cv::Mat input, std::string name, double scale, cv::Scalar mean){net->setInput(input, name, scale, mean);}"
+        :%dnn-net-set-input "[](cv::dnn::Net *net, cv::Mat *blob, std::string name, double scale, cv::Scalar *mean){net->setInput(*blob, name, scale, *mean);}"
+        :%dnn-net-set-input-shape "[](cv::dnn::Net *net, std::string name, cv::Mat *shape){net->setInputShape(name, *shape);}"
+
         ;; ======== FaceDetectorYN
         :%face-detector-yn-create "[](std::string model, std::string config, cv::Size *input_size, float score_threashold, float nms_threshold, int top_k, int backend_id, int target_id){return cv::FaceDetectorYN::create(model,config,*input_size,score_threashold,nms_threshold,top_k,backend_id, target_id);}"
         :%face-detector-yn-detect "[](cv::FaceDetectorYN *fyn, cv::Mat *image){cv::Mat *faces = new cv::Mat(); fyn->detect(*image,*faces); return faces;}"
