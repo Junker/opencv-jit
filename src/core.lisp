@@ -162,11 +162,11 @@
     (format out "<~(~A~),~D>(~{~A~^ ~})" (vec-type v) (vec-len v) (vec-to-list v))))
 
 @export
-(defmethod vec-val ((v vec) i)
-  (assert (< i (vec-len v)))
-  (let ((ptr (cvo-ptr v))
-        (type (vec-type v))
-        (len (vec-len v)))
+(defmethod vec-val ((vec vec) i)
+  (assert (< i (vec-len vec)))
+  (let ((ptr (cvo-ptr vec))
+        (type (vec-type vec))
+        (len (vec-len vec)))
     (case type
       (:uchar (case len
                 (2 (%vec-uchar2-val ptr i))
@@ -198,16 +198,16 @@
                  (4 (%vec-ushort4-val ptr i)))))))
 
 @export
-(defmethod vec-to-list ((v vec))
-  (append (list (vec-val v 0) (vec-val v 1))
-          (when (> (vec-len v) 2)
-            (list (vec-val v 2)))
-          (when (> (vec-len v) 3)
-            (list (vec-val v 3)))))
+(defmethod vec-to-list ((vec vec))
+  (append (list (vec-val vec 0) (vec-val vec 1))
+          (when (> (vec-len vec) 2)
+            (list (vec-val vec 2)))
+          (when (> (vec-len vec) 3)
+            (list (vec-val vec 3)))))
 @export
-(defmethod vec-to-vector ((v vec))
-  (make-array (vec-len v)
-              :initial-contents (vec-to-list v)))
+(defmethod vec-to-vector ((vec vec))
+  (make-array (vec-len vec)
+              :initial-contents (vec-to-list vec)))
 
 ;;  ===================== Mat
 @export
@@ -216,14 +216,15 @@
 ;; (defun make-mat (ptr)
 ;;   (make-instance 'mat :ptr ptr))
 
-(defmethod initialize-instance :after ((m mat) &key)
-  (let ((ptr (cvo-ptr m)))
-    (trivial-garbage:finalize m
+(defmethod initialize-instance :after ((mat mat) &key)
+  (let ((ptr (cvo-ptr mat)))
+    (trivial-garbage:finalize mat
                               (lambda () (%mat-release ptr)))))
 
-(defmethod print-object ((m mat) out)
-  (print-unreadable-object (m out :type t :identity t)
-    (format out "(:DIMS ~D :TYPE ~A :TOTAL ~D)" (mat-dims m) (mat-type m) (mat-total m))))
+(defmethod print-object ((mat mat) out)
+  (print-unreadable-object (mat out :type t :identity t)
+    (format out "(:DIMS ~D :TYPE ~A :TOTAL ~D)" (mat-dims mat) (mat-type mat) (mat-total mat))))
+
 
 @export
 (defun make-mat ()
@@ -239,10 +240,10 @@
                    :ptr mat)))
 
 @export
-(defmethod mat-at ((m mat) i0 &optional (i1 0 i1p) (i2 0 i2p))
-  (let* ((ptr (cvo-ptr m))
-         (type (mat-type m))
-         (dims (mat-dims m)))
+(defmethod mat-at ((mat mat) i0 &optional (i1 0 i1p) (i2 0 i2p))
+  (let* ((ptr (cvo-ptr mat))
+         (type (mat-type mat))
+         (dims (mat-dims mat)))
     (assert (case dims
               (1 (not i1p))
               (2 (and i1p (not i2p)))
@@ -281,66 +282,67 @@
 
 
 @export
-(defmethod mat-channels ((m mat))
-  (%mat-channels (cvo-ptr m)))
+(defmethod mat-channels ((mat mat))
+  (%mat-channels (cvo-ptr mat)))
 
 @export
-(defmethod mat-col ((m mat) idx)
+(defmethod mat-col ((mat mat) idx)
   (make-instance 'mat
-                 :ptr (%mat-col (cvo-ptr m) idx)))
+                 :ptr (%mat-col (cvo-ptr mat) idx)))
 
 @export
-(defmethod mat-cols ((m mat))
-  (%mat-cols (cvo-ptr m)))
+(defmethod mat-cols ((mat mat))
+  (%mat-cols (cvo-ptr mat)))
 
 @export
-(defmethod mat-depth ((m mat))
-  (const-int-kw (%mat-depth (cvo-ptr m))
+(defmethod mat-depth ((mat mat))
+  (const-int-kw (%mat-depth (cvo-ptr mat))
                 *mat-depths*))
 
 @export
-(defmethod mat-dims ((m mat))
-  (%mat-dims (cvo-ptr m)))
+(defmethod mat-dims ((mat mat))
+  (%mat-dims (cvo-ptr mat)))
 
 @export
-(defmethod mat-empty-p ((m mat))
-  (%mat-empty (cvo-ptr m)))
+(defmethod mat-empty-p ((mat mat))
+  (%mat-empty (cvo-ptr mat)))
 
 @export
-(defmethod mat-row ((m mat) idx)
+(defmethod mat-row ((mat mat) idx)
   (make-instance 'mat
-                 :ptr (%mat-row (cvo-ptr m) idx)))
+                 :ptr (%mat-row (cvo-ptr mat) idx)))
 
 @export
-(defmethod mat-rows ((m mat))
-  (%mat-rows (cvo-ptr m)))
+(defmethod mat-rows ((mat mat))
+  (%mat-rows (cvo-ptr mat)))
 
 @export
-(defmethod mat-total ((m mat))
-  (%mat-total (cvo-ptr m)))
+(defmethod mat-total ((mat mat))
+  (%mat-total (cvo-ptr mat)))
 
 @export
-(defmethod mat-type ((m mat))
-  (const-int-kw (%mat-type (cvo-ptr m))
+(defmethod mat-type ((mat mat))
+  (const-int-kw (%mat-type (cvo-ptr mat))
                 *mat-types*))
 
 @export
-(defmethod mat-size ((m mat))
+(defmethod mat-size ((mat mat))
   (make-instance 'size
-                 :ptr (%mat-size (cvo-ptr m))))
+                 :ptr (%mat-size (cvo-ptr mat))))
+
 
 ;;  ===================== Size
 @export
 (defclass size (cvo) ())
 
-(defmethod initialize-instance :after ((sz size) &key)
-  (let ((ptr (cvo-ptr sz)))
-    (trivial-garbage:finalize sz
+(defmethod initialize-instance :after ((size size) &key)
+  (let ((ptr (cvo-ptr size)))
+    (trivial-garbage:finalize size
                               (lambda () (%size-delete ptr)))))
 
-(defmethod print-object ((s size) out)
-  (print-unreadable-object (s out :type t)
-    (format out "(:WIDTH ~D :HEIGHT ~D)" (size-width s) (size-height s))))
+(defmethod print-object ((size size) out)
+  (print-unreadable-object (size out :type t)
+    (format out "(:WIDTH ~D :HEIGHT ~D)" (size-width size) (size-height size))))
 
 @export
 (defun make-size (&optional (width 0) (height 0))
@@ -348,20 +350,20 @@
                  :ptr (%new-size-wh width height)))
 
 @export
-(defmethod size-width ((sz size))
-  (%size-width (cvo-ptr sz)))
+(defmethod size-width ((size size))
+  (%size-width (cvo-ptr size)))
 
 @export
-(defmethod size-height ((sz size))
-  (%size-height (cvo-ptr sz)))
+(defmethod size-height ((size size))
+  (%size-height (cvo-ptr size)))
 
 ;;  ===================== Scalar
 @export
 (defclass scalar (vec) ())
 
-(defmethod initialize-instance :after ((sc scalar) &key)
-  (let ((ptr (cvo-ptr sc)))
-    (trivial-garbage:finalize sc
+(defmethod initialize-instance :after ((scr scalar) &key)
+  (let ((ptr (cvo-ptr scr)))
+    (trivial-garbage:finalize scr
                               (lambda () (%scalar-delete ptr)))))
 
 @export
@@ -375,41 +377,41 @@
                                     (coerce v3 'double-float))))
 
 @export
-(defmethod scalar-val ((sc scalar) idx)
-  (vec-val sc idx))
+(defmethod scalar-val ((scr scalar) idx)
+  (vec-val scr idx))
 
 @export
-(defmethod scalar-to-list ((sc scalar))
-  (vec-to-list sc))
+(defmethod scalar-to-list ((scr scalar))
+  (vec-to-list scr))
 
 @export
-(defmethod scalar-to-vector ((sc scalar))
-  (vec-to-vector sc))
+(defmethod scalar-to-vector ((scr scalar))
+  (vec-to-vector scr))
 
 ;;  ===================== Point
 @export
 (defclass point (cvo) ())
 
-(defmethod initialize-instance :after ((p point) &key)
-  (let ((ptr (cvo-ptr p)))
-    (trivial-garbage:finalize p
+(defmethod initialize-instance :after ((pt point) &key)
+  (let ((ptr (cvo-ptr pt)))
+    (trivial-garbage:finalize pt
                               (lambda () (%point-delete ptr)))))
 
-(defmethod print-object ((p point) out)
-  (print-unreadable-object (p out :type t)
-    (format out "(:X ~D :Y ~D)" (point-x p) (point-y p))))
+(defmethod print-object ((pt point) out)
+  (print-unreadable-object (pt out :type t)
+    (format out "(:X ~D :Y ~D)" (point-x pt) (point-y pt))))
 
 @export
 (defun make-point (&optional (x 0) (y 0))
   (make-instance 'point :ptr (%new-point-xy x y)))
 
 @export
-(defmethod point-x ((p point))
-  (%point-x (cvo-ptr p)))
+(defmethod point-x ((pt point))
+  (%point-x (cvo-ptr pt)))
 
 @export
-(defmethod point-y ((p point))
-  (%point-y (cvo-ptr p)))
+(defmethod point-y ((pt point))
+  (%point-y (cvo-ptr pt)))
 
 
 ;; ===================== Rect
@@ -417,32 +419,32 @@
 @export
 (defclass rect (cvo) ())
 
-(defmethod initialize-instance :after ((r rect) &key)
-  (let ((ptr (cvo-ptr r)))
-    (trivial-garbage:finalize r
+(defmethod initialize-instance :after ((rect rect) &key)
+  (let ((ptr (cvo-ptr rect)))
+    (trivial-garbage:finalize rect
                               (lambda () (%rect-delete ptr)))))
 
-(defmethod print-object ((r rect) out)
-  (print-unreadable-object (r out :type t)
+(defmethod print-object ((rect rect) out)
+  (print-unreadable-object (rect out :type t)
     (format out "(:WIDTH ~D :HEIGHT ~D :X ~D :Y ~D)"
-            (rect-width r) (rect-height r) (rect-x r) (rect-y r))))
+            (rect-width rect) (rect-height rect) (rect-x rect) (rect-y rect))))
 
 @export
 (defun make-rect (&optional (x 0) (y 0) (width 0) (height 0))
   (make-instance 'rect :ptr (%new-rect-xywh x y width height)))
 
 @export
-(defmethod rect-x ((r rect))
-  (%rect-x (cvo-ptr r)))
+(defmethod rect-x ((rect rect))
+  (%rect-x (cvo-ptr rect)))
 
 @export
-(defmethod rect-y ((r rect))
-  (%rect-y (cvo-ptr r)))
+(defmethod rect-y ((rect rect))
+  (%rect-y (cvo-ptr rect)))
 
 @export
-(defmethod rect-width ((r rect))
-  (%rect-width (cvo-ptr r)))
+(defmethod rect-width ((rect rect))
+  (%rect-width (cvo-ptr rect)))
 
 @export
-(defmethod rect-height ((r rect))
-  (%rect-height (cvo-ptr r)))
+(defmethod rect-height ((rect rect))
+  (%rect-height (cvo-ptr rect)))

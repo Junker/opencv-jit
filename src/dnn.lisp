@@ -76,14 +76,18 @@
 ;; == METHODS
 
 @export
-(defmethod net-set-input ((n net) input &key (name "") (scale-factor 1.0) mean)
-  (%dnn-net-set-input (cvo-ptr n)
+(defmethod net-empty ((net net))
+  (%dnn-net-empty (cvo-ptr net)))
+
+@export
+(defmethod net-set-input ((net net) input &key (name "") (scale-factor 1.0) mean)
+  (%dnn-net-set-input (cvo-ptr net)
                       (cvo-ptr input)
                       name
                       (coerce scale-factor 'double-float)
                       (cvo-ptr (or mean (make-scalar)))))
 
 @export
-(defmethod net-forward ((n net) &optional (output-name ""))
+(defmethod net-forward ((net net) &optional (output-name ""))
   (make-instance 'mat
-                 :ptr (%dnn-net-forward n output-name)))
+                 :ptr (%dnn-net-forward (cvo-ptr net) output-name)))
