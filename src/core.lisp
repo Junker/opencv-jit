@@ -168,34 +168,13 @@
         (type (vec-type vec))
         (len (vec-len vec)))
     (case type
-      (:uchar (case len
-                (2 (%vec-uchar2-val ptr i))
-                (3 (%vec-uchar3-val ptr i))
-                (4 (%vec-uchar4-val ptr i))))
-      (:schar (case len
-                (2 (%vec-schar2-val ptr i))
-                (3 (%vec-schar3-val ptr i))
-                (4 (%vec-schar4-val ptr i))))
-      (:double (case len
-                 (2 (%vec-double2-val ptr i))
-                 (3 (%vec-double3-val ptr i))
-                 (4 (%vec-double4-val ptr i))))
-      (:float (case len
-                (2 (%vec-float2-val ptr i))
-                (3 (%vec-float3-val ptr i))
-                (4 (%vec-float4-val ptr i))))
-      (:int (case len
-              (2 (%vec-int2-val ptr i))
-              (3 (%vec-int3-val ptr i))
-              (4 (%vec-int4-val ptr i))))
-      (:short (case len
-                (2 (%vec-short2-val ptr i))
-                (3 (%vec-short3-val ptr i))
-                (4 (%vec-short4-val ptr i))))
-      (:ushort (case len
-                 (2 (%vec-ushort2-val ptr i))
-                 (3 (%vec-ushort3-val ptr i))
-                 (4 (%vec-ushort4-val ptr i)))))))
+      (:uchar (%vec-uchar-val ptr i))
+      (:schar (%vec-schar-val ptr i))
+      (:double (%vec-double-val ptr i))
+      (:float (%vec-float-val ptr i))
+      (:int (%vec-int-val ptr i))
+      (:short (%vec-short-val ptr i))
+      (:ushort (%vec-ushort-val ptr i)))))
 
 @export
 (defmethod vec-to-list ((vec vec))
@@ -342,8 +321,9 @@
 
 @export
 (defmethod mat-to-array ((mat mat))
-  "Converts Mat to array. Works only for Mat with 1 channel"
-  (assert (= 1 (mat-channels mat)))
+  "Converts Mat to array. Works only for 2D Mat with 1 channel"
+  (assert (and (= 2 (mat-dims mat))
+               (= 1 (mat-channels mat))))
   (let* ((rows (mat-rows mat))
          (cols (mat-cols mat))
          (elem-type (mat-elem-type mat))
