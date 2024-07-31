@@ -1,5 +1,7 @@
 # OpenCV-JIT
 
+OpenCV 4.x bindings for common Lisp.
+
 OpenCV-JIT uses [CL-CXX-JIT](https://github.com/Islam0mar/CL-CXX-JIT) system 
 which compiles C++ bindings on system load.
 
