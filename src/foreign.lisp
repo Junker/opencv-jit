@@ -158,6 +158,7 @@
         :%mat-copy-to "[](cv::Mat *mat, cv::Mat *dst, cv::Mat *mask){return mat->copyTo(*dst, *mask);}"
         :%mat-convert-to "[](cv::Mat *mat, cv::Mat *dst, int type){return mat->convertTo(*dst, type);}"
         :%mat-elem-size "[](cv::Mat *mat){return mat->elemSize();}"
+        :%mat-data "[](cv::Mat *mat){return mat->data;}"
         :%mat-depth "[](cv::Mat *mat){return mat->depth();}"
         :%mat-dims "[](cv::Mat *mat){return mat->dims;}"
         :%mat-inv "[](cv::Mat *mat){return mat->inv();}"

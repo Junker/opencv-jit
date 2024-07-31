@@ -225,6 +225,15 @@
   (print-unreadable-object (mat out :type t :identity t)
     (format out "(:DIMS ~D :TYPE ~A :TOTAL ~D)" (mat-dims mat) (mat-type mat) (mat-total mat))))
 
+(defmethod mat-elem-type ((mat mat))
+  (case (mat-depth mat)
+    (:8U :uchar)
+    (:8S :schar)
+    (:16U :ushort)
+    (:16S :short)
+    (:32F :float)
+    (:32S :int)
+    (:64F :double)))
 
 @export
 (defun make-mat ()
@@ -330,6 +339,19 @@
   (make-instance 'size
                  :ptr (%mat-size (cvo-ptr mat))))
 
+@export
+(defmethod mat-to-array ((mat mat))
+  "Converts Mat to array. Works only for Mat with 1 channel"
+  (assert (= 1 (mat-channels mat)))
+  (let* ((rows (mat-rows mat))
+         (cols (mat-cols mat))
+         (elem-type (mat-elem-type mat))
+         (data-ptr (%mat-data (cvo-ptr mat)))
+         (total (* rows cols))
+         (vector (cffi:foreign-array-to-lisp data-ptr (list :array elem-type total))))
+    (make-array (list rows cols)
+                :initial-contents (loop :for i :from 0 :below total :by cols
+                                        :collect (subseq vector i (+ i cols))))))
 
 ;;  ===================== Size
 @export
