@@ -71,6 +71,8 @@
         (is = (mat-total mat) 64)
         (is = (mat-rows mat) 8)
         (is = (mat-cols mat) 8)
+        (is = (mat-axis-length mat 0) 8)
+        (is = (mat-axis-length mat 1) 8)
         (is = (size-width size) 8)
         (is = (size-height size) 8)
         (is = (mat-channels mat) 3)

@@ -326,9 +326,9 @@
                  :ptr (%mat-size (cvo-ptr mat))))
 
 @export
-(defmethod mat-axis-size ((mat mat) axis-num)
+(defmethod mat-axis-length ((mat mat) axis-num)
   (assert (< axis-num (mat-dims mat)))
-  (%mat-axis-size (cvo-ptr mat) axis-num))
+  (%mat-axis-length (cvo-ptr mat) axis-num))
 
 @export
 (defmethod mat-to-array ((mat mat))
@@ -341,7 +341,7 @@
          (total (%mat-total ptr))
          (vector (cffi:foreign-array-to-lisp data-ptr (list :array elem-type total))))
     (array-operations:reshape vector (loop :for i :from 0 :below dims
-                                           :collect (%mat-axis-size ptr i)))))
+                                           :collect (%mat-axis-length ptr i)))))
 
 ;;  ===================== Size
 @export
