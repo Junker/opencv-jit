@@ -19,7 +19,11 @@
                                                           :output '(:string :stripped t)))
       (cxx-jit:*cxx-compiler-flags* (strcat "-std=c++17 -Wall "
                                             (uiop:run-program "pkg-config --cflags opencv4"
-                                                              :output '(:string :stripped t)))))
+                                                              :output '(:string :stripped t))))
+      ;; TEMP: until https://github.com/Islam0mar/CL-CXX-JIT/pull/9
+      (cxx-jit:*cxx-type-name-to-cffi-type-symbol-alist* (append cxx-jit:*cxx-type-name-to-cffi-type-symbol-alist*
+                                                                 (list (cons "size_t" :size)
+                                                                       (cons "ssize_t" :ssize)))))
   (from '("<opencv2/opencv.hpp>" "<opencv2/core/mat.hpp>" "<opencv2/dnn/dnn.hpp>")
         ;; Cv
         '(;; ======== ImgProc
