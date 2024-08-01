@@ -284,6 +284,12 @@
   (%mat-cols (cvo-ptr mat)))
 
 @export
+(defmethod mat-data ((mat mat))
+  (assert (= 1 (mat-channels mat)))
+  (cffi:foreign-array-to-lisp (%mat-data (cvo-ptr mat))
+                              (list :array (mat-elem-type mat) (mat-total mat))))
+
+@export
 (defmethod mat-depth ((mat mat))
   (const-int-kw (%mat-depth (cvo-ptr mat))
                 *mat-depths*))
