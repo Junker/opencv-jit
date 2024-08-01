@@ -332,18 +332,16 @@
 
 @export
 (defmethod mat-to-array ((mat mat))
-  "Converts Mat to array. Works only for 2D Mat with 1 channel"
-  (assert (and (= 2 (mat-dims mat))
-               (= 1 (mat-channels mat))))
-  (let* ((rows (mat-rows mat))
-         (cols (mat-cols mat))
+  "Converts Mat to array. Works only for Mat with 1 channel"
+  (assert (= 1 (mat-channels mat)))
+  (let* ((ptr (cvo-ptr mat))
+         (dims (%mat-dims ptr))
          (elem-type (mat-elem-type mat))
-         (data-ptr (%mat-data (cvo-ptr mat)))
-         (total (* rows cols))
+         (data-ptr (%mat-data ptr))
+         (total (%mat-total ptr))
          (vector (cffi:foreign-array-to-lisp data-ptr (list :array elem-type total))))
-    (make-array (list rows cols)
-                :initial-contents (loop :for i :from 0 :below total :by cols
-                                        :collect (subseq vector i (+ i cols))))))
+    (array-operations:reshape vector (loop :for i :from 0 :below dims
+                                           :collect (%mat-axis-size ptr i)))))
 
 ;;  ===================== Size
 @export
