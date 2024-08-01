@@ -157,6 +157,7 @@
           :%mat-row "[](cv::Mat *mat, int x){return new cv::Mat(mat->row(x));}"
           :%mat-rows "[](cv::Mat *mat){return mat->rows;}"
           :%mat-size "[](cv::Mat *mat){return new cv::Size(mat->size());}"
+          :%mat-axis-size "[](cv::Mat *mat, int axis){return mat->size[axis];}"
           :%mat-step "[](cv::Mat *mat){return mat->step;}"
           :%mat-t "[](cv::Mat *mat){return new cv::Mat(mat->t());}"
           :%mat-type "[](cv::Mat *mat){return mat->type();}"

@@ -326,6 +326,11 @@
                  :ptr (%mat-size (cvo-ptr mat))))
 
 @export
+(defmethod mat-axis-size ((mat mat) axis-num)
+  (assert (< axis-num (mat-dims mat)))
+  (%mat-axis-size (cvo-ptr mat) axis-num))
+
+@export
 (defmethod mat-to-array ((mat mat))
   "Converts Mat to array. Works only for 2D Mat with 1 channel"
   (assert (and (= 2 (mat-dims mat))
