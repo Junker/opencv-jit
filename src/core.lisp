@@ -165,8 +165,7 @@
 (defmethod vec-val ((vec vec) i)
   (assert (< i (vec-len vec)))
   (let ((ptr (cvo-ptr vec))
-        (type (vec-type vec))
-        (len (vec-len vec)))
+        (type (vec-type vec)))
     (case type
       (:uchar (%vec-uchar-val ptr i))
       (:schar (%vec-schar-val ptr i))
