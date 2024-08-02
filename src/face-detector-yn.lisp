@@ -10,13 +10,9 @@
 (cl-annot:enable-annot-syntax)
 
 @export
-(defclass face-detector-yn (cvo) ())
-
-(defmethod initialize-instance :after ((fyn face-detector-yn) &key)
-  (let ((ptr (cvo-ptr fyn)))
-    (trivial-garbage:finalize fyn
-                              (lambda () (%face-detector-yn-delete ptr)))))
-
+(defclass face-detector-yn (cvo) ()
+  (:default-initargs
+   :free-func #'%face-detector-yn-delete))
 
 @export
 (defun make-face-detector-yn (model config size &key (score-threshold 0.9)

@@ -9,14 +9,11 @@
 
 (cl-annot:enable-annot-syntax)
 
+;; Backend
 @export
-(defclass net (cvo) ())
-
-@export
-(defmethod initialize-instance :after ((net net) &key)
-  (let ((ptr (cvo-ptr net)))
-    (trivial-garbage:finalize net
-                              (lambda () (%dnn-net-delete ptr)))))
+(defclass net (cvo) ()
+  (:default-initargs
+   :free-func #'%dnn-net-delete))
 
 @export
 (defun read-net-from-caffe (prototxt model)

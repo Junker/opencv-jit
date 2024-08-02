@@ -102,9 +102,21 @@
 (defclass cvo ()
   ((ptr :initarg :ptr
         :reader cvo-ptr
-        :type system-area-pointer))
-  (:default-initargs
-   :ptr (error "PTR required.")))
+        :initform (error "PTR required.")
+        :type system-area-pointer)
+   (free-func :initarg :free-func
+              :accessor cvo-free-func
+              :initform nil
+              :type (or null function))))
+
+
+(defmethod initialize-instance :after ((cvo cvo) &key)
+  (let ((ptr (cvo-ptr cvo))
+        (free-func (cvo-free-func cvo)))
+    (when free-func
+      (trivial-garbage:finalize cvo
+                                (lambda ()
+                                  (funcall free-func ptr))))))
 
 ;;  ===================== Vec
 (deftype vectype () '(member :uchar :schar :double :float :int :short :ushort))
@@ -122,40 +134,41 @@
    :type (error "TYPE required.")))
 
 (defmethod initialize-instance :after ((v vec) &key)
-  (let ((ptr (cvo-ptr v))
-        (type (vec-type v))
-        (len (vec-len v)))
-    (trivial-garbage:finalize v
-                              (lambda ()
-                                (case type
-                                  (:uchar (case len
-                                            (2 (%vec-uchar2-delete ptr))
-                                            (3 (%vec-uchar3-delete ptr))
-                                            (4 (%vec-uchar4-delete ptr))))
-                                  (:schar (case len
-                                            (2 (%vec-schar2-delete ptr))
-                                            (3 (%vec-schar3-delete ptr))
-                                            (4 (%vec-schar4-delete ptr))))
-                                  (:double (case len
-                                             (2 (%vec-double2-delete ptr))
-                                             (3 (%vec-double3-delete ptr))
-                                             (4 (%vec-double4-delete ptr))))
-                                  (:float (case len
-                                            (2 (%vec-float2-delete ptr))
-                                            (3 (%vec-float3-delete ptr))
-                                            (4 (%vec-float4-delete ptr))))
-                                  (:int (case len
-                                          (2 (%vec-int2-delete ptr))
-                                          (3 (%vec-int3-delete ptr))
-                                          (4 (%vec-int4-delete ptr))))
-                                  (:short (case len
-                                            (2 (%vec-short2-delete ptr))
-                                            (3 (%vec-short3-delete ptr))
-                                            (4 (%vec-short4-delete ptr))))
-                                  (:ushort (case len
-                                             (2 (%vec-ushort2-delete ptr))
-                                             (3 (%vec-ushort3-delete ptr))
-                                             (4 (%vec-ushort4-delete ptr)))))))))
+  (unless (cvo-free-func v)
+    (let ((ptr (cvo-ptr v))
+          (type (vec-type v))
+          (len (vec-len v)))
+      (trivial-garbage:finalize v
+                                (lambda ()
+                                  (case type
+                                    (:uchar (case len
+                                              (2 (%vec-uchar2-delete ptr))
+                                              (3 (%vec-uchar3-delete ptr))
+                                              (4 (%vec-uchar4-delete ptr))))
+                                    (:schar (case len
+                                              (2 (%vec-schar2-delete ptr))
+                                              (3 (%vec-schar3-delete ptr))
+                                              (4 (%vec-schar4-delete ptr))))
+                                    (:double (case len
+                                               (2 (%vec-double2-delete ptr))
+                                               (3 (%vec-double3-delete ptr))
+                                               (4 (%vec-double4-delete ptr))))
+                                    (:float (case len
+                                              (2 (%vec-float2-delete ptr))
+                                              (3 (%vec-float3-delete ptr))
+                                              (4 (%vec-float4-delete ptr))))
+                                    (:int (case len
+                                            (2 (%vec-int2-delete ptr))
+                                            (3 (%vec-int3-delete ptr))
+                                            (4 (%vec-int4-delete ptr))))
+                                    (:short (case len
+                                              (2 (%vec-short2-delete ptr))
+                                              (3 (%vec-short3-delete ptr))
+                                              (4 (%vec-short4-delete ptr))))
+                                    (:ushort (case len
+                                               (2 (%vec-ushort2-delete ptr))
+                                               (3 (%vec-ushort3-delete ptr))
+                                               (4 (%vec-ushort4-delete ptr))))))))))
 
 (defmethod print-object ((v vec) out)
   (print-unreadable-object (v out :type t)
@@ -189,15 +202,12 @@
 
 ;;  ===================== Mat
 @export
-(defclass mat (cvo) ())
+(defclass mat (cvo) ()
+  (:default-initargs
+   :free-func #'%mat-release))
 
 ;; (defun make-mat (ptr)
 ;;   (make-instance 'mat :ptr ptr))
-
-(defmethod initialize-instance :after ((mat mat) &key)
-  (let ((ptr (cvo-ptr mat)))
-    (trivial-garbage:finalize mat
-                              (lambda () (%mat-release ptr)))))
 
 (defmethod print-object ((mat mat) out)
   (print-unreadable-object (mat out :type t :identity t)
@@ -344,12 +354,9 @@
 
 ;;  ===================== Size
 @export
-(defclass size (cvo) ())
-
-(defmethod initialize-instance :after ((size size) &key)
-  (let ((ptr (cvo-ptr size)))
-    (trivial-garbage:finalize size
-                              (lambda () (%size-delete ptr)))))
+(defclass size (cvo) ()
+  (:default-initargs
+   :free-func #'%size-delete))
 
 (defmethod print-object ((size size) out)
   (print-unreadable-object (size out :type t)
@@ -370,12 +377,9 @@
 
 ;;  ===================== Scalar
 @export
-(defclass scalar (vec) ())
-
-(defmethod initialize-instance :after ((scr scalar) &key)
-  (let ((ptr (cvo-ptr scr)))
-    (trivial-garbage:finalize scr
-                              (lambda () (%scalar-delete ptr)))))
+(defclass scalar (vec) ()
+  (:default-initargs
+   :free-func #'%scalar-delete))
 
 @export
 (defun make-scalar (&optional (v0 0) (v1 0) (v2 0) (v3 0))
@@ -401,12 +405,9 @@
 
 ;;  ===================== Point
 @export
-(defclass point (cvo) ())
-
-(defmethod initialize-instance :after ((pt point) &key)
-  (let ((ptr (cvo-ptr pt)))
-    (trivial-garbage:finalize pt
-                              (lambda () (%point-delete ptr)))))
+(defclass point (cvo) ()
+  (:default-initargs
+   :free-func #'%point-delete))
 
 (defmethod print-object ((pt point) out)
   (print-unreadable-object (pt out :type t)
@@ -428,12 +429,9 @@
 ;; ===================== Rect
 
 @export
-(defclass rect (cvo) ())
-
-(defmethod initialize-instance :after ((rect rect) &key)
-  (let ((ptr (cvo-ptr rect)))
-    (trivial-garbage:finalize rect
-                              (lambda () (%rect-delete ptr)))))
+(defclass rect (cvo) ()
+  (:default-initargs
+   :free-func #'%rect-delete))
 
 (defmethod print-object ((rect rect) out)
   (print-unreadable-object (rect out :type t)
