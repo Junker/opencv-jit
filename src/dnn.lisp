@@ -102,5 +102,7 @@
 
 @export
 (defmethod net-forward ((net net) &optional (output-name ""))
-  (make-instance 'mat
-                 :ptr (%dnn-net-forward (cvo-ptr net) output-name)))
+  ;; prevents FLOATING-POINT-INVALID-OPERATION or segfault (if TBB enabled)
+  (float-features:with-float-traps-masked (:invalid)
+    (make-instance 'mat
+                   :ptr (%dnn-net-forward (cvo-ptr net) output-name))))
