@@ -25,7 +25,7 @@ which compiles C++ bindings on system load.
 (defvar *model-bin* "/tmp/res10_300x300_ssd_iter_140000.caffemodel")
 (defvar *net* (read-net-from-caffe *model-text* *model-bin*))
 
-(defun load-from-octets ((data ))
+(defun load-from-octets (data)
   (check-type data (vector (unsigned-byte 8)))
   (imdecode data :COLOR))
 
