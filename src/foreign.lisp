@@ -206,7 +206,12 @@
           :%dnn-net-set-input-shape "[](cv::dnn::Net *net, std::string name, cv::Mat *shape){net->setInputShape(name, *shape);}"
 
           ;; ======== FaceDetectorYN
-          :%face-detector-yn-create "[](std::string model, std::string config, cv::Size *input_size, float score_threashold, float nms_threshold, int top_k, int backend_id, int target_id){return cv::FaceDetectorYN::create(model,config,*input_size,score_threashold,nms_threshold,top_k,backend_id, target_id);}"
+          :%face-detector-yn-create "[](const char* model, const char* config, cv::Size *input_size, float score_threashold, float nms_threshold, int top_k, int backend_id, int target_id){cv::Ptr<cv::FaceDetectorYN> ptr = cv::FaceDetectorYN::create(model,config,*input_size,score_threashold,nms_threshold,top_k,backend_id, target_id); auto temp = new cv::Ptr<cv::FaceDetectorYN>(ptr); return ptr.get(); }"
           :%face-detector-yn-detect "[](cv::FaceDetectorYN *fyn, cv::Mat *image){cv::Mat *faces = new cv::Mat(); fyn->detect(*image,*faces); return faces;}"
-          :%face-detector-yn-set-input-size "[](cv::FaceDetectorYN *fyn, cv::Size *input_size){return fyn->setInputSize(*input_size);}"
+          :%face-detector-yn-get-nms-threshold "[](cv::FaceDetectorYN *fyn){return fyn->getNMSThreshold();}"
+          :%face-detector-yn-get-score-threshold "[](cv::FaceDetectorYN *fyn){return fyn->getScoreThreshold();}"
+          :%face-detector-yn-get-top-k "[](cv::FaceDetectorYN *fyn){return fyn->getTopK();}"
+          :%face-detector-yn-set-input-size "[](cv::FaceDetectorYN *fyn, cv::Size *input_size){fyn->setInputSize(*input_size);}"
+          :%face-detector-yn-set-nms-threshold "[](cv::FaceDetectorYN *fyn, float nms_threshold){fyn->setNMSThreshold(nms_threshold);}"
+          :%face-detector-yn-set-score-threshold "[](cv::FaceDetectorYN *fyn, float score_threshold){fyn->setScoreThreshold(score_threshold);}"
           :%face-detector-yn-delete "[](cv::FaceDetectorYN *fyn){delete fyn;}")))

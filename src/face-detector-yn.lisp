@@ -23,12 +23,24 @@
                                                 (coerce score-threshold 'float)
                                                 (coerce nms-threshold 'float)
                                                 top-k backend-id target-id)))
+@export
+(defmethod face-detector-yn-get-nms-threshold ((fyn face-detector-yn))
+  (%face-detector-yn-get-nms-threshold (cvo-ptr fyn)))
+
+@export
+(defmethod face-detector-yn-get-score-threshold ((fyn face-detector-yn))
+  (%face-detector-yn-get-score-threshold (cvo-ptr fyn)))
+
+@export
+(defmethod face-detector-yn-get-top-k ((fyn face-detector-yn))
+  (%face-detector-yn-get-top-k (cvo-ptr fyn)))
 
 @export
 (defmethod face-detector-yn-set-input-size ((fyn face-detector-yn) size)
-  (%face-detector-yn-set-input-size fyn (cvo-ptr size)))
+  (%face-detector-yn-set-input-size (cvo-ptr fyn) (cvo-ptr size)))
+
 
 @export
 (defmethod face-detector-yn-detect ((fyn face-detector-yn) image)
   (make-instance 'mat
-                 :ptr (%face-detector-yn-detect fyn (cvo-ptr image))))
+                 :ptr (%face-detector-yn-detect (cvo-ptr fyn) (cvo-ptr image))))
