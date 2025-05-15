@@ -6,7 +6,7 @@
         #:opencv-jit/foreign
         #:opencv-jit/core)
   (:import-from #:trivial-types
-                #:property-list-p))
+                #:property-list))
 (in-package :opencv-jit/imgcodecs)
 
 (cl-annot:enable-annot-syntax)
@@ -267,7 +267,7 @@
 
 @export
 (defun imwrite (path img &rest params)
-  (assert (property-list-p params))
+  (check-type params (or null property-list))
   (let ((prep-params (mapcar (lambda (el)
                                (if (keywordp el)
                                    (const-kw-int el *imwrite-flags*)
