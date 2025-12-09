@@ -102,8 +102,7 @@
 (defclass cvo ()
   ((ptr :initarg :ptr
         :reader cvo-ptr
-        :initform (error "PTR required.")
-        :type system-area-pointer)
+        :initform (error "PTR required."))
    (free-func :initarg :free-func
               :accessor cvo-free-func
               :initform nil
