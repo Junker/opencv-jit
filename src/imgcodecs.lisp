@@ -6,7 +6,8 @@
         #:opencv-jit/foreign
         #:opencv-jit/core)
   (:import-from #:trivial-types
-                #:property-list))
+                #:property-list)
+  (:documentation "Image reading and writing functions: imread, imwrite, imdecode."))
 (in-package :opencv-jit/imgcodecs)
 
 (cl-annot:enable-annot-syntax)
@@ -247,6 +248,15 @@
 
 @export
 (defun imdecode (data &rest flags)
+  "Decode an image from in-memory data.
+
+Arguments:
+  DATA - A (VECTOR (UNSIGNED-BYTE 8)) containing encoded image data
+  FLAGS - Optional read mode flags (default :COLOR)
+    Possible values: :UNCHANGED, :GRAYSCALE, :COLOR, :ANYDEPTH, :ANYCOLOR
+
+Returns:
+  A MAT object containing the decoded image."
   (check-type data (vector (unsigned-byte 8)))
   (cffi:with-foreign-array (pointer data (list :array :uchar (length data)))
     (make-instance 'mat
@@ -257,6 +267,15 @@
                                                       (or flags '(:COLOR))))))))
 @export
 (defun imread (path &rest flags)
+  "Load an image from a file.
+
+Arguments:
+  PATH - Path to the image file (pathname or string)
+  FLAGS - Optional read mode flags (default :COLOR)
+    Possible values: :UNCHANGED, :GRAYSCALE, :COLOR, :ANYDEPTH, :ANYCOLOR
+
+Returns:
+  A MAT object containing the loaded image."
   (make-instance 'mat
                  :ptr (%imread (etypecase path
                                  (pathname (namestring path))
@@ -267,6 +286,13 @@
 
 @export
 (defun imwrite (path img &rest params)
+  "Save an image to a file.
+
+Arguments:
+  PATH - Path to save the image (pathname or string)
+  IMG - MAT object to save
+  PARAMS - Optional property list of write parameters
+    Example: :JPEG-QUALITY 90 :PNG-COMPRESSION 3"
   (check-type params (or null property-list))
   (let ((prep-params (mapcar (lambda (el)
                                (if (keywordp el)

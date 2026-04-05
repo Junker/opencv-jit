@@ -3,7 +3,8 @@
         #:cl-annot
         #:cl-annot.class
         #:opencv-jit/foreign
-        #:opencv-jit/util))
+        #:opencv-jit/util)
+  (:documentation "Core OpenCV classes and functions: Mat, Size, Scalar, Point, Rect, Vec."))
 (in-package :opencv-jit/core)
 
 (cl-annot:enable-annot-syntax)
@@ -175,6 +176,11 @@
 
 @export
 (defmethod vec-val ((vec vec) i)
+  "Get the value at index I from VEC.
+
+Arguments:
+  VEC - A VEC object
+  I - Index (0-based)"
   (assert (< i (vec-len vec)))
   (let ((ptr (cvo-ptr vec))
         (type (vec-type vec)))
@@ -189,6 +195,7 @@
 
 @export
 (defmethod vec-to-list ((vec vec))
+  "Convert VEC to a Lisp list."
   (append (list (vec-val vec 0) (vec-val vec 1))
           (when (> (vec-len vec) 2)
             (list (vec-val vec 2)))
@@ -196,6 +203,7 @@
             (list (vec-val vec 3)))))
 @export
 (defmethod vec-to-vector ((vec vec))
+  "Convert VEC to a Lisp vector."
   (make-array (vec-len vec)
               :initial-contents (vec-to-list vec)))
 
@@ -224,11 +232,31 @@
 
 @export
 (defun make-mat ()
+  "Create a new empty Mat object."
   (make-instance 'mat
                  :ptr (%new-mat)))
 
 @export
+(defun make-mat-from-mat (mat)
+  "Create a new Mat object as a copy of another Mat.
+
+Arguments:
+  MAT - The source MAT object to copy from"
+  (make-instance 'mat
+                 :ptr (%new-mat-from-mat (cvo-ptr mat))))
+
+@export
 (defun make-mat-with-size (rows cols type &optional s)
+  "Create a new Mat with specified dimensions and type.
+
+Arguments:
+  ROWS - Number of rows (height)
+  COLS - Number of columns (width)
+  TYPE - Mat type keyword (e.g., :8UC1, :8UC3, :32FC1)
+  S - Optional SCALAR for initial fill value
+
+Returns:
+  A new MAT instance with the specified dimensions and type."
   (let ((mat (if s
                  (%new-mat-rows-cols-type-s rows cols (const-kw-int type *mat-types*) (cvo-ptr s))
                  (%new-mat-rows-cols-type rows cols (const-kw-int type *mat-types*)))))
@@ -237,6 +265,18 @@
 
 @export
 (defmethod mat-at ((mat mat) &rest indices)
+  "Get the element value at specified INDICES in MAT.
+
+For single-channel mats, returns a scalar value.
+For multi-channel mats, returns a VEC object.
+
+Arguments:
+  MAT - The MAT object
+  INDICES - Coordinates (e.g., row col for 2D, or z row col for 3D)
+
+Returns:
+  For single-channel: A scalar value (integer or float)
+  For multi-channel: A VEC object"
   (assert (= (length indices) (mat-dims mat)))
   (let* ((ptr (cvo-ptr mat))
          (type (mat-type mat))
@@ -280,67 +320,124 @@
 
 @export
 (defmethod mat-channels ((mat mat))
+  "Return the number of channels in MAT.
+
+Returns:
+  Number of channels (1 for grayscale, 3 for BGR, 4 for BGRA, etc.)"
   (%mat-channels (cvo-ptr mat)))
 
 @export
+(defmethod mat-clone ((mat mat))
+  "Create a deep copy of MAT."
+  (make-instance 'mat
+                 :ptr (%mat-clone (cvo-ptr mat))))
+@export
 (defmethod mat-col ((mat mat) idx)
+  "Get a single column from MAT.
+
+Arguments:
+  IDX - Column index (0-based)
+
+Returns:
+  A new MAT representing the specified column."
   (make-instance 'mat
                  :ptr (%mat-col (cvo-ptr mat) idx)))
 
 @export
 (defmethod mat-cols ((mat mat))
+  "Return the number of columns in MAT."
   (%mat-cols (cvo-ptr mat)))
 
 @export
 (defmethod mat-data ((mat mat))
+  "Return the raw pixel data of MAT as a Lisp array.
+Only works for single-channel mats."
   (assert (= 1 (mat-channels mat)))
   (cffi:foreign-array-to-lisp (%mat-data (cvo-ptr mat))
                               (list :array (mat-elem-type mat) (mat-total mat))))
 
 @export
 (defmethod mat-depth ((mat mat))
+  "Return the depth type of MAT.
+
+Returns:
+  Depth keyword (:8U, :8S, :16U, :16S, :32S, :32F, :64F, :16F)."
   (const-int-kw (%mat-depth (cvo-ptr mat))
                 *mat-depths*))
 
 @export
 (defmethod mat-dims ((mat mat))
+  "Return the number of dimensions in MAT."
   (%mat-dims (cvo-ptr mat)))
 
 @export
 (defmethod mat-empty-p ((mat mat))
+  "Check if MAT is empty.
+
+Returns:
+  T if MAT is empty, NIL otherwise."
   (%mat-empty (cvo-ptr mat)))
 
 @export
 (defmethod mat-row ((mat mat) idx)
+  "Get a single row from MAT.
+
+Arguments:
+  IDX - Row index (0-based)
+
+Returns:
+  A new MAT representing the specified row."
   (make-instance 'mat
                  :ptr (%mat-row (cvo-ptr mat) idx)))
 
 @export
 (defmethod mat-rows ((mat mat))
+  "Return the number of rows in MAT."
   (%mat-rows (cvo-ptr mat)))
 
 @export
 (defmethod mat-total ((mat mat))
+  "Return the total number of elements in MAT."
   (%mat-total (cvo-ptr mat)))
 
 @export
 (defmethod mat-type ((mat mat))
+  "Return the type of MAT elements.
+
+Returns:
+  Type keyword (e.g., :8UC1, :8UC3, :32FC1)."
   (const-int-kw (%mat-type (cvo-ptr mat))
                 *mat-types*))
 
 @export
 (defmethod mat-size ((mat mat))
+  "Return the size of MAT.
+
+Returns:
+  A SIZE object with width and height."
   (make-instance 'size
                  :ptr (%mat-size (cvo-ptr mat))))
 
 @export
 (defmethod mat-axis-length ((mat mat) axis-num)
+  "Return the length of a specific axis in MAT.
+
+Arguments:
+  AXIS-NUM - Axis index (0-based)
+
+Returns:
+  Length of the specified axis."
   (assert (< axis-num (mat-dims mat)))
   (%mat-axis-length (cvo-ptr mat) axis-num))
 
 @export
 (defmethod mat-to-array ((mat mat))
-  "Converts Mat to array. Works only for Mat with 1 channel"
+  "Convert MAT to a Lisp array.
+Only works for single-channel mats. The array shape matches
+the mat dimensions.
+
+Arguments:
+  MAT - A MAT object"
   (assert (= 1 (mat-channels mat)))
   (let* ((ptr (cvo-ptr mat))
          (dims (%mat-dims ptr))
@@ -363,15 +460,22 @@
 
 @export
 (defun make-size (&optional (width 0) (height 0))
+  "Create a new Size object.
+
+Arguments:
+  WIDTH - Width value (default 0)
+  HEIGHT - Height value (default 0)"
   (make-instance 'size
                  :ptr (%new-size-wh width height)))
 
 @export
 (defmethod size-width ((size size))
+  "Return the width of SIZE."
   (%size-width (cvo-ptr size)))
 
 @export
 (defmethod size-height ((size size))
+  "Return the height of SIZE."
   (%size-height (cvo-ptr size)))
 
 ;;  ===================== Scalar
@@ -382,6 +486,13 @@
 
 @export
 (defun make-scalar (&optional (v0 0) (v1 0) (v2 0) (v3 0))
+  "Create a new Scalar object with up to 4 double values.
+
+Arguments:
+  V0 - First value (default 0)
+  V1 - Second value (default 0)
+  V2 - Third value (default 0)
+  V3 - Fourth value (default 0)"
   (make-instance 'scalar
                  :len 4
                  :type :double
@@ -392,14 +503,21 @@
 
 @export
 (defmethod scalar-val ((scr scalar) idx)
+  "Get the value at index IDX from SCALAR.
+
+Arguments:
+  SCR - A SCALAR object
+  IDX - Index (0-3)"
   (vec-val scr idx))
 
 @export
 (defmethod scalar-to-list ((scr scalar))
+  "Convert SCALAR to a Lisp list."
   (vec-to-list scr))
 
 @export
 (defmethod scalar-to-vector ((scr scalar))
+  "Convert SCALAR to a Lisp vector."
   (vec-to-vector scr))
 
 ;;  ===================== Point
@@ -414,14 +532,20 @@
 
 @export
 (defun make-point (&optional (x 0) (y 0))
+  "Create a new Point object.
+Arguments:
+  X - X coordinate (default 0)
+  Y - Y coordinate (default 0)"
   (make-instance 'point :ptr (%new-point-xy x y)))
 
 @export
 (defmethod point-x ((pt point))
+  "Return the X coordinate of POINT."
   (%point-x (cvo-ptr pt)))
 
 @export
 (defmethod point-y ((pt point))
+  "Return the Y coordinate of POINT."
   (%point-y (cvo-ptr pt)))
 
 
@@ -439,20 +563,31 @@
 
 @export
 (defun make-rect (&optional (x 0) (y 0) (width 0) (height 0))
+  "Create a new Rect object.
+
+Arguments:
+  X - X coordinate of top-left corner (default 0)
+  Y - Y coordinate of top-left corner (default 0)
+  WIDTH - Width of rectangle (default 0)
+  HEIGHT - Height of rectangle (default 0)"
   (make-instance 'rect :ptr (%new-rect-xywh x y width height)))
 
 @export
 (defmethod rect-x ((rect rect))
+  "Return the X coordinate of RECT's top-left corner."
   (%rect-x (cvo-ptr rect)))
 
 @export
 (defmethod rect-y ((rect rect))
+  "Return the Y coordinate of RECT's top-left corner."
   (%rect-y (cvo-ptr rect)))
 
 @export
 (defmethod rect-width ((rect rect))
+  "Return the width of RECT."
   (%rect-width (cvo-ptr rect)))
 
 @export
 (defmethod rect-height ((rect rect))
+  "Return the height of RECT."
   (%rect-height (cvo-ptr rect)))

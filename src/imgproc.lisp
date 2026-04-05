@@ -4,7 +4,8 @@
         #:cl-annot.class
         #:opencv-jit/foreign
         #:opencv-jit/util
-        #:opencv-jit/core))
+        #:opencv-jit/core)
+  (:documentation "Image processing functions: color conversion, resizing, filtering."))
 (in-package :opencv-jit/imgproc)
 
 (cl-annot:enable-annot-syntax)
@@ -581,7 +582,17 @@
     (:BGRA2YUV-YUNV . ,+COLOR-BGRA2YUV-YUNV+)
     (:COLORCVT-MAX . ,+COLOR-COLORCVT-MAX+)))
 
+@export
 (defun cvt-color (src code &key dst)
+  "Convert image from one color space to another.
+
+Arguments:
+  SRC - Source MAT
+  CODE - Color conversion code (e.g., :BGR2GRAY, :BGR2HSV, :RGB2GRAY)
+  :DST - Optional destination MAT (if not provided, a new one is created)
+
+Returns:
+  The destination MAT with converted colors."
   (let ((mat (or dst (make-mat))))
     (%cvt-color (cvo-ptr src) (cvo-ptr mat)
                 (const-kw-int code *color-conversion-codes*))
@@ -589,6 +600,17 @@
 
 @export
 (defmethod resize ((src mat) size &key dst (interpolation :LINEAR))
+  "Resize image to specified SIZE.
+
+Arguments:
+  SRC - Source MAT
+  SIZE - Target SIZE object
+  :DST - Optional destination MAT (if not provided, a new one is created)
+  :INTERPOLATION - Interpolation method (default :LINEAR)
+    Possible values: :NEAREST, :LINEAR, :CUBIC, :AREA, :LANCZOS4
+
+Returns:
+  The destination MAT with resized image."
   (let ((mat (or dst (make-mat))))
     (%resize (cvo-ptr src) (cvo-ptr mat) (cvo-ptr size)
              (const-kw-int interpolation *interpolation-flags*))
