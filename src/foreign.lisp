@@ -1,217 +1,207 @@
 (defpackage opencv-jit/foreign
-  (:use #:cl)
-  (:import-from #:cxx-jit)
+  (:use #:cl
+        #:cxxynergy)
   (:import-from #:uiop
                 #:strcat))
 (in-package #:opencv-jit/foreign)
 
-(cl-annot:enable-annot-syntax)
+(defmacro defcxxfun-exp (name fun-body)
+  `(progn
+     (export (quote ,name))
+     (defcxxfun ,name ,fun-body)))
 
-(defun from (includes funcs)
-  (apply #'cxx-jit:from includes 'import
-         (loop :for (func-name func) :on funcs :by #'cddr
-               :collect (cons func
-                              (string func-name))))
-  (loop :for (func-name func) :on funcs :by #'cddr
-        :do (export (intern (string func-name)))))
+(let ((cxxynergy:*cxx-compiler-link-libs* (uiop:run-program "pkg-config --libs opencv4"
+                                                            :output '(:string :stripped t)))
+      (cxxynergy:*cxx-compiler-flags* (strcat "-std=c++17 -Wall "
+                                              (uiop:run-program "pkg-config --cflags opencv4"
+                                                                :output '(:string :stripped t)))))
+  (with-cxx ("<opencv2/opencv.hpp>" "<opencv2/core/mat.hpp>" "<opencv2/dnn/dnn.hpp>")
+    ;; ======== ImgProc
+    (defcxxfun-exp %cvt-color "[](cv::Mat *src, cv::Mat *dst, int code){return cv::cvtColor(*src, *dst, code);}")
+    (defcxxfun-exp %equalize-hist "[](cv::Mat *src, cv::Mat *dst){cv::equalizeHist(*src, *dst);}")
+    (defcxxfun-exp %compare-hist "[](cv::Mat *hist1, cv::Mat *hist2, int method){return cv::compareHist(*hist1, *hist2, method);}")
+    (defcxxfun-exp %bilateral-filter "[](cv::Mat *src, cv::Mat *dst, int d, double sc, double ss){cv::bilateralFilter(*src, *dst, d, sc, ss);}")
+    (defcxxfun-exp %resize "[](cv::Mat *src, cv::Mat *dst, cv::Size *dsize, int interpolation){cv::resize(*src, *dst, *dsize, interpolation);}")
+    ;; ======== ImgCodecs
+    (defcxxfun-exp %imdecode "[](uchar *buf, size_t size, int flags){return new cv::Mat(cv::imdecode(std::vector<uchar>(buf, buf + size), flags));}")
+    (defcxxfun-exp %imread "[](const char* filename, int flags){return new cv::Mat(cv::imread(filename, flags));}")
+    (defcxxfun-exp %imwrite "[](const char* filename, cv::Mat *img, int *params, uint params_size){return cv::imwrite(filename, *img, std::vector<int>(params, params + params_size));}")
+    ;; ======== HighGUI
+    (defcxxfun-exp %imshow "[](const char* wname, cv::Mat *mat){cv::imshow(wname, *mat);}")
+    (defcxxfun-exp %waitkey "[](int delay = 0){return cv::waitKey(delay);}")
+    (defcxxfun-exp %named-window "[](const char* wname, int flags){cv::namedWindow(wname, flags);}")
+    (defcxxfun-exp %destroy-window "[](const char* wname){cv::destroyWindow(wname);}")
+    (defcxxfun-exp %move-window "[](const char* wname, int x, int y){cv::moveWindow(wname, x, y);}")
+    (defcxxfun-exp %resize-window "[](const char* wname, int w, int h){cv::resizeWindow(wname, w, h);}")
+    (defcxxfun-exp %set-window-title "[](const char* wname, const char* title){cv::setWindowTitle(wname, title);}")
+    ;; ======== Vec
+    (defcxxfun-exp %make-vec-int10 "[](int i0,int i1,int i2,int i3,int i4,int i5,int i6,int i7,int i8,int i9){return new cv::Vec<int,10>(i0,i1,i2,i3,i4,i5,i6,i7,i8,i9);}")
+    (defcxxfun-exp %vec-uchar-val "[](cv::Vec<uchar,10> *vec, int i){return vec->val[i];}")
+    (defcxxfun-exp %vec-schar-val "[](cv::Vec<schar,10> *vec, int i){return vec->val[i];}")
+    (defcxxfun-exp %vec-double-val "[](cv::Vec<double,10> *vec, int i){return vec->val[i];}")
+    (defcxxfun-exp %vec-float-val "[](cv::Vec<float,10> *vec, int i){return vec->val[i];}")
+    (defcxxfun-exp %vec-int-val "[](cv::Vec<int,10> *vec, int i){return vec->val[i];}")
+    (defcxxfun-exp %vec-short-val "[](cv::Vec<short,10> *vec, int i){return vec->val[i];}")
+    (defcxxfun-exp %vec-ushort-val "[](cv::Vec<ushort,10> *vec, int i){return vec->val[i];}")
+    (defcxxfun-exp %vec-uchar2-delete "[](cv::Vec2b *vec){delete vec;}")
+    (defcxxfun-exp %vec-uchar3-delete "[](cv::Vec3b *vec){delete vec;}")
+    (defcxxfun-exp %vec-uchar4-delete "[](cv::Vec4b *vec){delete vec;}")
+    (defcxxfun-exp %vec-schar2-delete "[](cv::Vec<schar, 2> *vec){delete vec;}")
+    (defcxxfun-exp %vec-schar3-delete "[](cv::Vec<schar, 3> *vec){delete vec;}")
+    (defcxxfun-exp %vec-schar4-delete "[](cv::Vec<schar, 4> *vec){delete vec;}")
+    (defcxxfun-exp %vec-double2-delete "[](cv::Vec2d *vec){delete vec;}")
+    (defcxxfun-exp %vec-double3-delete "[](cv::Vec3d *vec){delete vec;}")
+    (defcxxfun-exp %vec-double4-delete "[](cv::Vec4d *vec){delete vec;}")
+    (defcxxfun-exp %vec-float2-delete "[](cv::Vec2f *vec){delete vec;}")
+    (defcxxfun-exp %vec-float3-delete "[](cv::Vec3f *vec){delete vec;}")
+    (defcxxfun-exp %vec-float4-delete "[](cv::Vec4f *vec){delete vec;}")
+    (defcxxfun-exp %vec-int2-delete "[](cv::Vec2i *vec){delete vec;}")
+    (defcxxfun-exp %vec-int3-delete "[](cv::Vec3i *vec){delete vec;}")
+    (defcxxfun-exp %vec-int4-delete "[](cv::Vec4i *vec){delete vec;}")
+    (defcxxfun-exp %vec-int10-delete "[](cv::Vec<int,10> *vec){delete vec;}")
+    (defcxxfun-exp %vec-short2-delete "[](cv::Vec2s *vec){delete vec;}")
+    (defcxxfun-exp %vec-short3-delete "[](cv::Vec3s *vec){delete vec;}")
+    (defcxxfun-exp %vec-short4-delete "[](cv::Vec4s *vec){delete vec;}")
+    (defcxxfun-exp %vec-ushort2-delete "[](cv::Vec2w *vec){delete vec;}")
+    (defcxxfun-exp %vec-ushort3-delete "[](cv::Vec3w *vec){delete vec;}")
+    (defcxxfun-exp %vec-ushort4-delete "[](cv::Vec4w *vec){delete vec;}")
+    ;; ======== Size
+    (defcxxfun-exp %new-size "[](){return new cv::Size();}")
+    (defcxxfun-exp %new-size-from-size "[](cv::Size *sz){return new cv::Size(*sz);}")
+    (defcxxfun-exp %new-size-wh "[](int width, int height){return new cv::Size2i(width, height);}")
+    (defcxxfun-exp %size-width "[](cv::Size *sz){return sz->width;}")
+    (defcxxfun-exp %size-height "[](cv::Size *sz){return sz->height;}")
+    (defcxxfun-exp %size-delete "[](cv::Size *sz){delete sz;}")
+    ;; ======== Scalar
+    (defcxxfun-exp %new-scalar "[](){return new cv::Scalar();}")
+    (defcxxfun-exp %new-scalar4 "[](double v0, double v1, double v2, double v3){return new cv::Scalar(v0,v1,v2,v3);}")
+    (defcxxfun-exp %scalar-delete "[](cv::Scalar *scr){delete scr;}")
+    ;; ======== Mat
+    (defcxxfun-exp %new-mat "[](){return new cv::Mat();}")
+    (defcxxfun-exp %new-mat-rows-cols-type "[](int rows, int cols, int type){return new cv::Mat(rows,cols,type);}")
+    (defcxxfun-exp %new-mat-rows-cols-type-s "[](int rows, int cols, int type, cv::Scalar *s){return new cv::Mat(rows,cols,type,*s);}")
+    (defcxxfun-exp %new-mat-from-mat "[](cv::Mat *mat){return new cv::Mat(*mat);}")
+    (defcxxfun-exp %new-mat-from-scalar "[](cv::Scalar *scr){return new cv::Mat(*scr);}")
+    (defcxxfun-exp %mat-abs-diff "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::absdiff(*src1, *src2, *dst);}")
+    (defcxxfun-exp %mat-add "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::add(*src1, *src2, *dst);}")
+    (defcxxfun-exp %mat-bitwise-and "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::bitwise_and(*src1, *src2, *dst);}")
+    (defcxxfun-exp %mat-bitwise-and-with-mask "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst, cv::Mat *mask){return cv::bitwise_and(*src1, *src2, *dst, *mask);}")
+    (defcxxfun-exp %mat-bitwise-not "[](cv::Mat *src, cv::Mat *dst){return cv::bitwise_not(*src, *dst);}")
+    (defcxxfun-exp %mat-bitwise-not-with-mask "[](cv::Mat *src, cv::Mat *dst, cv::Mat *mask){return cv::bitwise_not(*src, *dst, *mask);}")
 
-(let ((cxx-jit:*cxx-compiler-link-libs* (uiop:run-program "pkg-config --libs opencv4"
-                                                          :output '(:string :stripped t)))
-      (cxx-jit:*cxx-compiler-flags* (strcat "-std=c++17 -Wall "
-                                            (uiop:run-program "pkg-config --cflags opencv4"
-                                                              :output '(:string :stripped t))))
-      ;; TEMP: until https://github.com/Islam0mar/CL-CXX-JIT/pull/9
-      (cxx-jit:*cxx-type-name-to-cffi-type-symbol-alist* (append cxx-jit:*cxx-type-name-to-cffi-type-symbol-alist*
-                                                                 (list (cons "size_t" :size)
-                                                                       (cons "ssize_t" :ssize)))))
-  (from '("<opencv2/opencv.hpp>" "<opencv2/core/mat.hpp>" "<opencv2/dnn/dnn.hpp>")
-        ;; Cv
-        '(;; ======== ImgProc
-          :%cvt-color "[](cv::Mat *src, cv::Mat *dst, int code){return cv::cvtColor(*src, *dst, code);}"
-          :%equalize-hist "[](cv::Mat *src, cv::Mat *dst){cv::equalizeHist(*src, *dst);}"
-          :%compare-hist "[](cv::Mat *hist1, cv::Mat *hist2, int method){return cv::compareHist(*hist1, *hist2, method);}"
-          :%bilateral-filter "[](cv::Mat *src, cv::Mat *dst, int d, double sc, double ss){cv::bilateralFilter(*src, *dst, d, sc, ss);}"
-          :%resize "[](cv::Mat *src, cv::Mat *dst, cv::Size *dsize, int interpolation){cv::resize(*src, *dst, *dsize, interpolation);}"
-          ;; ======== ImgCodecs
-          :%imdecode "[](uchar *buf, size_t size, int flags){return new cv::Mat(cv::imdecode(std::vector<uchar>(buf, buf + size), flags));}"
-          :%imread "[](const char* filename, int flags){return new cv::Mat(cv::imread(filename, flags));}"
-          :%imwrite "[](const char* filename, cv::Mat *img, int *params, uint params_size){return cv::imwrite(filename, *img, std::vector<int>(params, params + params_size));}"
-          ;; ======== HighGUI
-          :%imshow "[](const char* wname, cv::Mat *mat){cv::imshow(wname, *mat);}"
-          :%waitkey "[](int delay = 0){return cv::waitKey(delay);}"
-          :%named-window "[](const char* wname, int flags){cv::namedWindow(wname, flags);}"
-          :%destroy-window "[](const char* wname){cv::destroyWindow(wname);}"
-          :%move-window "[](const char* wname, int x, int y){cv::moveWindow(wname, x, y);}"
-          :%resize-window "[](const char* wname, int w, int h){cv::resizeWindow(wname, w, h);}"
-          :%set-window-title "[](const char* wname, const char* title){cv::setWindowTitle(wname, title);}"
-          ;; ======== Vec
-          :%make-vec-int10 "[](int i0,int i1,int i2,int i3,int i4,int i5,int i6,int i7,int i8,int i9){return new cv::Vec<int,10>(i0,i1,i2,i3,i4,i5,i6,i7,i8,i9);}"
-          :%vec-uchar-val "[](cv::Vec<uchar,10> *vec, int i){return vec->val[i];}"
-          :%vec-schar-val "[](cv::Vec<schar,10> *vec, int i){return vec->val[i];}"
-          :%vec-double-val "[](cv::Vec<double,10> *vec, int i){return vec->val[i];}"
-          :%vec-float-val "[](cv::Vec<float,10> *vec, int i){return vec->val[i];}"
-          :%vec-int-val "[](cv::Vec<int,10> *vec, int i){return vec->val[i];}"
-          :%vec-short-val "[](cv::Vec<short,10> *vec, int i){return vec->val[i];}"
-          :%vec-ushort-val "[](cv::Vec<ushort,10> *vec, int i){return vec->val[i];}"
-          :%vec-uchar2-delete "[](cv::Vec2b *vec){delete vec;}"
-          :%vec-uchar3-delete "[](cv::Vec3b *vec){delete vec;}"
-          :%vec-uchar4-delete "[](cv::Vec4b *vec){delete vec;}"
-          :%vec-schar2-delete "[](cv::Vec<schar, 2> *vec){delete vec;}"
-          :%vec-schar3-delete "[](cv::Vec<schar, 3> *vec){delete vec;}"
-          :%vec-schar4-delete "[](cv::Vec<schar, 4> *vec){delete vec;}"
-          :%vec-double2-delete "[](cv::Vec2d *vec){delete vec;}"
-          :%vec-double3-delete "[](cv::Vec3d *vec){delete vec;}"
-          :%vec-double4-delete "[](cv::Vec4d *vec){delete vec;}"
-          :%vec-float2-delete "[](cv::Vec2f *vec){delete vec;}"
-          :%vec-float3-delete "[](cv::Vec3f *vec){delete vec;}"
-          :%vec-float4-delete "[](cv::Vec4f *vec){delete vec;}"
-          :%vec-int2-delete "[](cv::Vec2i *vec){delete vec;}"
-          :%vec-int3-delete "[](cv::Vec3i *vec){delete vec;}"
-          :%vec-int4-delete "[](cv::Vec4i *vec){delete vec;}"
-          :%vec-int10-delete "[](cv::Vec<int,10> *vec){delete vec;}"
-          :%vec-short2-delete "[](cv::Vec2s *vec){delete vec;}"
-          :%vec-short3-delete "[](cv::Vec3s *vec){delete vec;}"
-          :%vec-short4-delete "[](cv::Vec4s *vec){delete vec;}"
-          :%vec-ushort2-delete "[](cv::Vec2w *vec){delete vec;}"
-          :%vec-ushort3-delete "[](cv::Vec3w *vec){delete vec;}"
-          :%vec-ushort4-delete "[](cv::Vec4w *vec){delete vec;}"
-          ;; ======== Size
-          :%new-size "[](){return new cv::Size();}"
-          :%new-size-from-size "[](cv::Size *sz){return new cv::Size(*sz);}"
-          :%new-size-wh "[](int width, int height){return new cv::Size2i(width, height);}"
-          :%size-width "[](cv::Size *sz){return sz->width;}"
-          :%size-height "[](cv::Size *sz){return sz->height;}"
-          :%size-delete "[](cv::Size *sz){delete sz;}"
-          ;; ======== Scalar
-          :%new-scalar "[](){return new cv::Scalar();}"
-          :%new-scalar4 "[](double v0, double v1, double v2, double v3){return new cv::Scalar(v0,v1,v2,v3);}"
-          :%scalar-delete "[](cv::Scalar *scr){delete scr;}"
-          ;; ======== Mat
-          :%new-mat "[](){return new cv::Mat();}"
-          :%new-mat-rows-cols-type "[](int rows, int cols, int type){return new cv::Mat(rows,cols,type);}"
-          :%new-mat-rows-cols-type-s "[](int rows, int cols, int type, cv::Scalar *s){return new cv::Mat(rows,cols,type,*s);}"
-          :%new-mat-from-mat "[](cv::Mat *mat){return new cv::Mat(*mat);}"
-          :%new-mat-from-scalar "[](cv::Scalar *scr){return new cv::Mat(*scr);}"
-          :%mat-abs-diff "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::absdiff(*src1, *src2, *dst);}"
-          :%mat-add "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::add(*src1, *src2, *dst);}"
-          :%mat-bitwise-and "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::bitwise_and(*src1, *src2, *dst);}"
-          :%mat-bitwise-and-with-mask "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst, cv::Mat *mask){return cv::bitwise_and(*src1, *src2, *dst, *mask);}"
-          :%mat-bitwise-not "[](cv::Mat *src, cv::Mat *dst){return cv::bitwise_not(*src, *dst);}"
-          :%mat-bitwise-not-with-mask "[](cv::Mat *src, cv::Mat *dst, cv::Mat *mask){return cv::bitwise_not(*src, *dst, *mask);}"
+    (defcxxfun-exp %mat-bitwise-or "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::bitwise_or(*src1, *src2, *dst);}")
+    (defcxxfun-exp %mat-bitwise-or-with-mask "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst, cv::Mat *mask){return cv::bitwise_or(*src1, *src2, *dst, *mask);}")
+    (defcxxfun-exp %mat-bitwise-xor "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::bitwise_xor(*src1, *src2, *dst);}")
+    (defcxxfun-exp %mat-bitwise-xor-with-mask "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst, cv::Mat *mask){return cv::bitwise_xor(*src1, *src2, *dst, *mask);}")
+    (defcxxfun-exp %mat-check-range "[](cv::Mat *mat){return cv::checkRange(*mat);}")
+    (defcxxfun-exp %mat-compare "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst, int ct){return cv::compare(*src1, *src2, *dst, ct);}")
+    (defcxxfun-exp %mat-count-non-zero "[](cv::Mat *src){return cv::countNonZero(*src);}")
 
-          :%mat-bitwise-or "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::bitwise_or(*src1, *src2, *dst);}"
-          :%mat-bitwise-or-with-mask "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst, cv::Mat *mask){return cv::bitwise_or(*src1, *src2, *dst, *mask);}"
-          :%mat-bitwise-xor "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst){return cv::bitwise_xor(*src1, *src2, *dst);}"
-          :%mat-bitwise-xor-with-mask "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst, cv::Mat *mask){return cv::bitwise_xor(*src1, *src2, *dst, *mask);}"
-          :%mat-check-range "[](cv::Mat *mat){return cv::checkRange(*mat);}"
-          :%mat-compare "[](cv::Mat *src1, cv::Mat *src2, cv::Mat *dst, int ct){return cv::compare(*src1, *src2, *dst, ct);}"
-          :%mat-count-non-zero "[](cv::Mat *src){return cv::countNonZero(*src);}"
+    (defcxxfun-exp %mat-eye "[](int rows, int cols, int type){cv::Mat* mat = new cv::Mat(rows, cols, type); *mat = cv::Mat::eye(rows, cols, type); return mat;}")
+    (defcxxfun-exp %mat-zeros "[](int rows, int cols, int type){cv::Mat* mat = new cv::Mat(rows, cols, type); *mat = cv::Mat::zeros(rows, cols, type); return mat;}")
+    (defcxxfun-exp %mat-ones "[](int rows, int cols, int type){cv::Mat* mat = new cv::Mat(rows, cols, type); *mat = cv::Mat::ones(rows, cols, type); return mat;}")
+    (defcxxfun-exp %mat-region "[](cv::Mat *mat, cv::Rect *rect){return new cv::Mat(*mat, *rect);}")
+    ;; methods
+    (defcxxfun-exp %mat-at-uchar "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<uchar>(*atvec);}")
+    (defcxxfun-exp %mat-at-schar "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<schar>(*atvec);}")
+    (defcxxfun-exp %mat-at-ushort "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<ushort>(*atvec);}")
+    (defcxxfun-exp %mat-at-short "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<short>(*atvec);}")
+    (defcxxfun-exp %mat-at-int "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<int>(*atvec);}")
+    (defcxxfun-exp %mat-at-float "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<float>(*atvec);}")
+    (defcxxfun-exp %mat-at-double "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<double>(*atvec);}")
+    (defcxxfun-exp %mat-at-uchar2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2b(mat->at<cv::Vec2b>(*atvec));}")
+    (defcxxfun-exp %mat-at-schar2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec<schar, 2>(mat->at<cv::Vec<schar, 2>>(*atvec));}")
+    (defcxxfun-exp %mat-at-ushort2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2w(mat->at<cv::Vec2w>(*atvec));}")
+    (defcxxfun-exp %mat-at-short2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2s(mat->at<cv::Vec2s>(*atvec));}")
+    (defcxxfun-exp %mat-at-int2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2i(mat->at<cv::Vec2i>(*atvec));}")
+    (defcxxfun-exp %mat-at-float2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2f(mat->at<cv::Vec2f>(*atvec));}")
+    (defcxxfun-exp %mat-at-double2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2d(mat->at<cv::Vec2d>(*atvec));}")
+    (defcxxfun-exp %mat-at-uchar3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3b(mat->at<cv::Vec3b>(*atvec));}")
+    (defcxxfun-exp %mat-at-schar3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec<schar, 3>(mat->at<cv::Vec<schar, 3>>(*atvec));}")
+    (defcxxfun-exp %mat-at-ushort3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3w(mat->at<cv::Vec3w>(*atvec));}")
+    (defcxxfun-exp %mat-at-short3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3s(mat->at<cv::Vec3s>(*atvec));}")
+    (defcxxfun-exp %mat-at-int3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3i(mat->at<cv::Vec3i>(*atvec));}")
+    (defcxxfun-exp %mat-at-float3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3f(mat->at<cv::Vec3f>(*atvec));}")
+    (defcxxfun-exp %mat-at-double3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3d(mat->at<cv::Vec3d>(*atvec));}")
+    (defcxxfun-exp %mat-at-uchar4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4b(mat->at<cv::Vec4b>(*atvec));}")
+    (defcxxfun-exp %mat-at-schar4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec<schar, 4>(mat->at<cv::Vec<schar, 4>>(*atvec));}")
+    (defcxxfun-exp %mat-at-ushort4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4w(mat->at<cv::Vec4w>(*atvec));}")
+    (defcxxfun-exp %mat-at-short4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4s(mat->at<cv::Vec4s>(*atvec));}")
+    (defcxxfun-exp %mat-at-int4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4i(mat->at<cv::Vec4i>(*atvec));}")
+    (defcxxfun-exp %mat-at-float4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4f(mat->at<cv::Vec4f>(*atvec));}")
+    (defcxxfun-exp %mat-at-double4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4d(mat->at<cv::Vec4d>(*atvec));}")
+    (defcxxfun-exp %mat-empty "[](cv::Mat *mat){return mat->empty();}")
+    (defcxxfun-exp %mat-clone "[](cv::Mat *mat){return new cv::Mat(mat->clone());}")
+    (defcxxfun-exp %mat-channels "[](cv::Mat *mat){return mat->channels();}")
+    (defcxxfun-exp %mat-col "[](cv::Mat *mat, int x){return new cv::Mat(mat->col(x));}")
+    (defcxxfun-exp %mat-cols "[](cv::Mat *mat){return mat->cols;}")
+    (defcxxfun-exp %mat-copy-to "[](cv::Mat *mat, cv::Mat *dst, cv::Mat *mask){return mat->copyTo(*dst, *mask);}")
+    (defcxxfun-exp %mat-convert-to "[](cv::Mat *mat, cv::Mat *dst, int type){return mat->convertTo(*dst, type);}")
+    (defcxxfun-exp %mat-elem-size "[](cv::Mat *mat){return mat->elemSize();}")
+    (defcxxfun-exp %mat-data "[](cv::Mat *mat){return mat->data;}")
+    (defcxxfun-exp %mat-depth "[](cv::Mat *mat){return mat->depth();}")
+    (defcxxfun-exp %mat-dims "[](cv::Mat *mat){return mat->dims;}")
+    (defcxxfun-exp %mat-inv "[](cv::Mat *mat){return mat->inv();}")
+    (defcxxfun-exp %mat-release "[](cv::Mat *mat){mat->release();}")
+    (defcxxfun-exp %mat-reshape "[](cv::Mat *mat, int cn, int rows){return new cv::Mat(mat->reshape(cn, rows));}")
+    (defcxxfun-exp %mat-row "[](cv::Mat *mat, int x){return new cv::Mat(mat->row(x));}")
+    (defcxxfun-exp %mat-rows "[](cv::Mat *mat){return mat->rows;}")
+    (defcxxfun-exp %mat-size "[](cv::Mat *mat){return new cv::Size(mat->size());}")
+    (defcxxfun-exp %mat-axis-length "[](cv::Mat *mat, int axis){return mat->size[axis];}")
+    (defcxxfun-exp %mat-step "[](cv::Mat *mat){return mat->step;}")
+    (defcxxfun-exp %mat-t "[](cv::Mat *mat){return new cv::Mat(mat->t());}")
+    (defcxxfun-exp %mat-type "[](cv::Mat *mat){return mat->type();}")
+    (defcxxfun-exp %mat-total "[](cv::Mat *mat){return mat->total();}")
+    ;; ======== Point
+    (defcxxfun-exp %new-point "[](){return new cv::Point();}")
+    (defcxxfun-exp %new-point-xy "[](int x, int y){return new cv::Point(x,y);}")
+    (defcxxfun-exp %point-x "[](cv::Point *pt){return pt->x;}")
+    (defcxxfun-exp %point-y "[](cv::Point *pt){return pt->y;}")
+    (defcxxfun-exp %point-cross "[](cv::Point *pt, cv::Point *pt2){return pt->cross(*pt2);}")
+    (defcxxfun-exp %point-ddot "[](cv::Point *pt, cv::Point *pt2){return pt->ddot(*pt2);}")
+    (defcxxfun-exp %point-dot "[](cv::Point *pt, cv::Point *pt2){return pt->dot(*pt2);}")
+    (defcxxfun-exp %point-inside "[](cv::Point *pt, cv::Rect *rect){return pt->inside(*rect);}")
+    (defcxxfun-exp %point-delete "[](cv::Point *pt){delete pt;}")
+    ;; ======== Rect
+    (defcxxfun-exp %new-rect "[](){return new cv::Rect();}")
+    (defcxxfun-exp %new-rect-xywh "[](int x, int y, int w, int h){return new cv::Rect(x,y,w,h);}")
+    (defcxxfun-exp %rect-x "[](cv::Rect *rect){return rect->x;}")
+    (defcxxfun-exp %rect-y "[](cv::Rect *rect){return rect->y;}")
+    (defcxxfun-exp %rect-width "[](cv::Rect *rect){return rect->width;}")
+    (defcxxfun-exp %rect-height "[](cv::Rect *rect){return rect->height;}")
+    (defcxxfun-exp %rect-area "[](cv::Rect *rect){return rect->area();}")
+    (defcxxfun-exp %rect-br "[](cv::Rect *rect){return rect->br();}")
+    (defcxxfun-exp %rect-empty "[](cv::Rect *rect){return rect->empty();}")
+    (defcxxfun-exp %rect-contains "[](cv::Rect *rect, cv::Point *pt){return rect->contains(*pt);}")
+    (defcxxfun-exp %rect-size "[](cv::Rect *rect){return new cv::Size(rect->size());}")
+    (defcxxfun-exp %rect-delete "[](cv::Rect *rect){delete rect;}")
+    ;; ======== DNN
+    (defcxxfun-exp %dnn-read-net "[](const char* model, const char* config){return cv::dnn::Net(cv::dnn::readNet(model, config));}")
+    (defcxxfun-exp %dnn-read-net-from-caffe "[](const char* prototxt, const char* model){return new cv::dnn::Net(cv::dnn::readNetFromCaffe(prototxt, model));}")
+    (defcxxfun-exp %dnn-read-net-from-darknet "[](const char* cfgfile, const char* model){return cv::dnn::Net(cv::dnn::readNetFromDarknet(cfgfile, model));}")
+    (defcxxfun-exp %dnn-read-net-from-onnx "[](const char* onnxfile){return new cv::dnn::Net(cv::dnn::readNetFromONNX(onnxfile));}")
+    (defcxxfun-exp %dnn-read-net-from-tensorflow "[](const char* model, const char* config){return new cv::dnn::Net(cv::dnn::readNetFromTensorflow(model, config));}")
+    (defcxxfun-exp %dnn-read-net-from-model-optimizer "[](const char* xml, const char* bin){return new cv::dnn::Net(cv::dnn::readNetFromModelOptimizer(xml, bin));}")
+    (defcxxfun-exp %dnn-read-net-from-tflite "[](const char* model){return new cv::dnn::Net(cv::dnn::readNetFromTFLite(model));}")
+    (defcxxfun-exp %dnn-read-net-from-torch "[](const char* model, bool binary, bool evaluate){return new cv::dnn::Net(cv::dnn::readNetFromTorch(model, binary, evaluate));}")
+    (defcxxfun-exp %dnn-blob-from-image "[](cv::Mat *image, double scale_factor, cv::Size *sz, cv::Scalar *mean, bool swap_rb, bool crop){cv::Mat *output = new cv::Mat(); cv::dnn::blobFromImage(*image, *output, scale_factor, *sz, *mean, swap_rb, crop); return output;}")
+    ;; methods
+    (defcxxfun-exp %dnn-net-dump "[](cv::dnn::Net *net){return net->dump();}")
+    (defcxxfun-exp %dnn-net-empty "[](cv::dnn::Net *net){return net->empty();}")
+    (defcxxfun-exp %dnn-net-enable-fusion "[](cv::dnn::Net *net, bool fusion){net->enableWinograd(fusion);}")
+    (defcxxfun-exp %dnn-net-enable-winograd "[](cv::dnn::Net *net, bool use_winograd){net->enableWinograd(use_winograd);}")
+    (defcxxfun-exp %dnn-net-delete "[](cv::dnn::Net *net){delete net;}")
+    (defcxxfun-exp %dnn-net-forward "[](cv::dnn::Net *net, const char* name){return new cv::Mat(net->forward(name));}")
+    (defcxxfun-exp %dnn-net-set-input "[](cv::dnn::Net *net, cv::Mat *blob, const char* name, double scale, cv::Scalar *mean){net->setInput(*blob, name, scale, *mean);}")
+    (defcxxfun-exp %dnn-net-set-input-shape "[](cv::dnn::Net *net, const char* name, cv::Mat *shape){net->setInputShape(name, *shape);}")
 
-          :%mat-eye "[](int rows, int cols, int type){cv::Mat* mat = new cv::Mat(rows, cols, type); *mat = cv::Mat::eye(rows, cols, type); return mat;}"
-          :%mat-zeros "[](int rows, int cols, int type){cv::Mat* mat = new cv::Mat(rows, cols, type); *mat = cv::Mat::zeros(rows, cols, type); return mat;}"
-          :%mat-ones "[](int rows, int cols, int type){cv::Mat* mat = new cv::Mat(rows, cols, type); *mat = cv::Mat::ones(rows, cols, type); return mat;}"
-          :%mat-region "[](cv::Mat *mat, cv::Rect *rect){return new cv::Mat(*mat, *rect);}"
-          ;; methods
-          :%mat-at-uchar "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<uchar>(*atvec);}"
-          :%mat-at-schar "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<schar>(*atvec);}"
-          :%mat-at-ushort "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<ushort>(*atvec);}"
-          :%mat-at-short "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<short>(*atvec);}"
-          :%mat-at-int "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<int>(*atvec);}"
-          :%mat-at-float "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<float>(*atvec);}"
-          :%mat-at-double "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return mat->at<double>(*atvec);}"
-          :%mat-at-uchar2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2b(mat->at<cv::Vec2b>(*atvec));}"
-          :%mat-at-schar2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec<schar, 2>(mat->at<cv::Vec<schar, 2>>(*atvec));}"
-          :%mat-at-ushort2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2w(mat->at<cv::Vec2w>(*atvec));}"
-          :%mat-at-short2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2s(mat->at<cv::Vec2s>(*atvec));}"
-          :%mat-at-int2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2i(mat->at<cv::Vec2i>(*atvec));}"
-          :%mat-at-float2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2f(mat->at<cv::Vec2f>(*atvec));}"
-          :%mat-at-double2 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec2d(mat->at<cv::Vec2d>(*atvec));}"
-          :%mat-at-uchar3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3b(mat->at<cv::Vec3b>(*atvec));}"
-          :%mat-at-schar3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec<schar, 3>(mat->at<cv::Vec<schar, 3>>(*atvec));}"
-          :%mat-at-ushort3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3w(mat->at<cv::Vec3w>(*atvec));}"
-          :%mat-at-short3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3s(mat->at<cv::Vec3s>(*atvec));}"
-          :%mat-at-int3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3i(mat->at<cv::Vec3i>(*atvec));}"
-          :%mat-at-float3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3f(mat->at<cv::Vec3f>(*atvec));}"
-          :%mat-at-double3 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec3d(mat->at<cv::Vec3d>(*atvec));}"
-          :%mat-at-uchar4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4b(mat->at<cv::Vec4b>(*atvec));}"
-          :%mat-at-schar4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec<schar, 4>(mat->at<cv::Vec<schar, 4>>(*atvec));}"
-          :%mat-at-ushort4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4w(mat->at<cv::Vec4w>(*atvec));}"
-          :%mat-at-short4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4s(mat->at<cv::Vec4s>(*atvec));}"
-          :%mat-at-int4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4i(mat->at<cv::Vec4i>(*atvec));}"
-          :%mat-at-float4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4f(mat->at<cv::Vec4f>(*atvec));}"
-          :%mat-at-double4 "[](cv::Mat *mat, cv::Vec<int,10> *atvec){return new cv::Vec4d(mat->at<cv::Vec4d>(*atvec));}"
-          :%mat-empty "[](cv::Mat *mat){return mat->empty();}"
-          :%mat-clone "[](cv::Mat *mat){return new cv::Mat(mat->clone());}"
-          :%mat-channels "[](cv::Mat *mat){return mat->channels();}"
-          :%mat-col "[](cv::Mat *mat, int x){return new cv::Mat(mat->col(x));}"
-          :%mat-cols "[](cv::Mat *mat){return mat->cols;}"
-          :%mat-copy-to "[](cv::Mat *mat, cv::Mat *dst, cv::Mat *mask){return mat->copyTo(*dst, *mask);}"
-          :%mat-convert-to "[](cv::Mat *mat, cv::Mat *dst, int type){return mat->convertTo(*dst, type);}"
-          :%mat-elem-size "[](cv::Mat *mat){return mat->elemSize();}"
-          :%mat-data "[](cv::Mat *mat){return mat->data;}"
-          :%mat-depth "[](cv::Mat *mat){return mat->depth();}"
-          :%mat-dims "[](cv::Mat *mat){return mat->dims;}"
-          :%mat-inv "[](cv::Mat *mat){return mat->inv();}"
-          :%mat-release "[](cv::Mat *mat){return mat->release();}"
-          :%mat-reshape "[](cv::Mat *mat, int cn, int rows){return new cv::Mat(mat->reshape(cn, rows));}"
-          :%mat-row "[](cv::Mat *mat, int x){return new cv::Mat(mat->row(x));}"
-          :%mat-rows "[](cv::Mat *mat){return mat->rows;}"
-          :%mat-size "[](cv::Mat *mat){return new cv::Size(mat->size());}"
-          :%mat-axis-length "[](cv::Mat *mat, int axis){return mat->size[axis];}"
-          :%mat-step "[](cv::Mat *mat){return mat->step;}"
-          :%mat-t "[](cv::Mat *mat){return new cv::Mat(mat->t());}"
-          :%mat-type "[](cv::Mat *mat){return mat->type();}"
-          :%mat-total "[](cv::Mat *mat){return mat->total();}"
-          ;; ======== Point
-          :%new-point "[](){return new cv::Point();}"
-          :%new-point-xy "[](int x, int y){return new cv::Point(x,y);}"
-          :%point-x "[](cv::Point *pt){return pt->x;}"
-          :%point-y "[](cv::Point *pt){return pt->y;}"
-          :%point-cross "[](cv::Point *pt, cv::Point *pt2){return pt->cross(*pt2);}"
-          :%point-ddot "[](cv::Point *pt, cv::Point *pt2){return pt->ddot(*pt2);}"
-          :%point-dot "[](cv::Point *pt, cv::Point *pt2){return pt->dot(*pt2);}"
-          :%point-inside "[](cv::Point *pt, cv::Rect *rect){return pt->inside(*rect);}"
-          :%point-delete "[](cv::Point *pt){delete pt;}"
-          ;; ======== Rect
-          :%new-rect "[](){return new cv::Rect();}"
-          :%new-rect-xywh "[](int x, int y, int w, int h){return new cv::Rect(x,y,w,h);}"
-          :%rect-x "[](cv::Rect *rect){return rect->x;}"
-          :%rect-y "[](cv::Rect *rect){return rect->y;}"
-          :%rect-width "[](cv::Rect *rect){return rect->width;}"
-          :%rect-height "[](cv::Rect *rect){return rect->height;}"
-          :%rect-area "[](cv::Rect *rect){return rect->area();}"
-          :%rect-br "[](cv::Rect *rect){return rect->br();}"
-          :%rect-empty "[](cv::Rect *rect){return rect->empty();}"
-          :%rect-contains "[](cv::Rect *rect, cv::Point *pt){return rect->contains(*pt);}"
-          :%rect-size "[](cv::Rect *rect){return new cv::Size(rect->size());}"
-          :%rect-delete "[](cv::Rect *rect){delete rect;}"
-          ;; ======== DNN
-          :%dnn-read-net "[](const char* model, const char* config){return cv::dnn::Net(cv::dnn::readNet(model, config));}"
-          :%dnn-read-net-from-caffe "[](const char* prototxt, const char* model){return new cv::dnn::Net(cv::dnn::readNetFromCaffe(prototxt, model));}"
-          :%dnn-read-net-from-darknet "[](const char* cfgfile, const char* model){return cv::dnn::Net(cv::dnn::readNetFromDarknet(cfgfile, model));}"
-          :%dnn-read-net-from-onnx "[](const char* onnxfile){return new cv::dnn::Net(cv::dnn::readNetFromONNX(onnxfile));}"
-          :%dnn-read-net-from-tensorflow "[](const char* model, const char* config){return new cv::dnn::Net(cv::dnn::readNetFromTensorflow(model, config));}"
-          :%dnn-read-net-from-model-optimizer "[](const char* xml, const char* bin){return new cv::dnn::Net(cv::dnn::readNetFromModelOptimizer(xml, bin));}"
-          :%dnn-read-net-from-tflite "[](const char* model){return new cv::dnn::Net(cv::dnn::readNetFromTFLite(model));}"
-          :%dnn-read-net-from-torch "[](const char* model, bool binary, bool evaluate){return new cv::dnn::Net(cv::dnn::readNetFromTorch(model, binary, evaluate));}"
-          :%dnn-blob-from-image "[](cv::Mat *image, double scale_factor, cv::Size *sz, cv::Scalar *mean, bool swap_rb, bool crop){cv::Mat *output = new cv::Mat(); cv::dnn::blobFromImage(*image, *output, scale_factor, *sz, *mean, swap_rb, crop); return output;}"
-          ;; methods
-          :%dnn-net-dump "[](cv::dnn::Net *net){return net->dump();}"
-          :%dnn-net-empty "[](cv::dnn::Net *net){return net->empty();}"
-          :%dnn-net-enable-fusion "[](cv::dnn::Net *net, bool fusion){net->enableWinograd(fusion);}"
-          :%dnn-net-enable-winograd "[](cv::dnn::Net *net, bool use_winograd){net->enableWinograd(use_winograd);}"
-          :%dnn-net-delete "[](cv::dnn::Net *net){delete net;}"
-          :%dnn-net-forward "[](cv::dnn::Net *net, const char* name){return new cv::Mat(net->forward(name));}"
-          :%dnn-net-set-input "[](cv::dnn::Net *net, cv::Mat *blob, const char* name, double scale, cv::Scalar *mean){net->setInput(*blob, name, scale, *mean);}"
-          :%dnn-net-set-input-shape "[](cv::dnn::Net *net, const char* name, cv::Mat *shape){net->setInputShape(name, *shape);}"
-
-          ;; ======== FaceDetectorYN
-          :%face-detector-yn-create "[](const char* model, const char* config, cv::Size *input_size, float score_threashold, float nms_threshold, int top_k, int backend_id, int target_id){cv::Ptr<cv::FaceDetectorYN> ptr = cv::FaceDetectorYN::create(model,config,*input_size,score_threashold,nms_threshold,top_k,backend_id, target_id); auto temp = new cv::Ptr<cv::FaceDetectorYN>(ptr); return ptr.get(); }"
-          :%face-detector-yn-detect "[](cv::FaceDetectorYN *fyn, cv::Mat *image){cv::Mat *faces = new cv::Mat(); fyn->detect(*image,*faces); return faces;}"
-          :%face-detector-yn-get-nms-threshold "[](cv::FaceDetectorYN *fyn){return fyn->getNMSThreshold();}"
-          :%face-detector-yn-get-score-threshold "[](cv::FaceDetectorYN *fyn){return fyn->getScoreThreshold();}"
-          :%face-detector-yn-get-top-k "[](cv::FaceDetectorYN *fyn){return fyn->getTopK();}"
-          :%face-detector-yn-set-input-size "[](cv::FaceDetectorYN *fyn, cv::Size *input_size){fyn->setInputSize(*input_size);}"
-          :%face-detector-yn-set-nms-threshold "[](cv::FaceDetectorYN *fyn, float nms_threshold){fyn->setNMSThreshold(nms_threshold);}"
-          :%face-detector-yn-set-score-threshold "[](cv::FaceDetectorYN *fyn, float score_threshold){fyn->setScoreThreshold(score_threshold);}"
-          :%face-detector-yn-delete "[](cv::FaceDetectorYN *fyn){delete fyn;}")))
+    ;; ======== FaceDetectorYN
+    (defcxxfun-exp %face-detector-yn-create "[](const char* model, const char* config, cv::Size *input_size, float score_threashold, float nms_threshold, int top_k, int backend_id, int target_id){cv::Ptr<cv::FaceDetectorYN> ptr = cv::FaceDetectorYN::create(model,config,*input_size,score_threashold,nms_threshold,top_k,backend_id, target_id); auto temp = new cv::Ptr<cv::FaceDetectorYN>(ptr); return ptr.get(); }")
+    (defcxxfun-exp %face-detector-yn-detect "[](cv::FaceDetectorYN *fyn, cv::Mat *image){cv::Mat *faces = new cv::Mat(); fyn->detect(*image,*faces); return faces;}")
+    (defcxxfun-exp %face-detector-yn-get-nms-threshold "[](cv::FaceDetectorYN *fyn){return fyn->getNMSThreshold();}")
+    (defcxxfun-exp %face-detector-yn-get-score-threshold "[](cv::FaceDetectorYN *fyn){return fyn->getScoreThreshold();}")
+    (defcxxfun-exp %face-detector-yn-get-top-k "[](cv::FaceDetectorYN *fyn){return fyn->getTopK();}")
+    (defcxxfun-exp %face-detector-yn-set-input-size "[](cv::FaceDetectorYN *fyn, cv::Size *input_size){fyn->setInputSize(*input_size);}")
+    (defcxxfun-exp %face-detector-yn-set-nms-threshold "[](cv::FaceDetectorYN *fyn, float nms_threshold){fyn->setNMSThreshold(nms_threshold);}")
+    (defcxxfun-exp %face-detector-yn-set-score-threshold "[](cv::FaceDetectorYN *fyn, float score_threshold){fyn->setScoreThreshold(score_threshold);}")
+    (defcxxfun-exp %face-detector-yn-delete "[](cv::FaceDetectorYN *fyn){delete fyn;}")))

@@ -1,11 +1,11 @@
 (defsystem opencv-jit
-  :version "0.1.0"
+  :version "0.1.1"
   :author "Dmitrii Kosenkov"
   :license "MIT"
   :description "Bindings for OpenCV"
   :homepage "https://github.com/Junker/opencv-jit"
   :source-control (:git "https://github.com/Junker/opencv-jit.git")
-  :depends-on ("uiop" "cxx-jit" "cl-annot" "trivial-garbage" "trivial-types" "alexandria" "array-operations" "float-features")
+  :depends-on ("uiop" "cxxynergy" "cl-annot" "trivial-garbage" "trivial-types" "alexandria" "array-operations" "float-features")
   :components ((:module "src"
                 :components ((:file "foreign")
                              (:file "util")

@@ -2,7 +2,7 @@
 
 OpenCV 4.x bindings for Common Lisp.
 
-OpenCV-JIT uses [CL-CXX-JIT](https://github.com/Islam0mar/CL-CXX-JIT) system
+OpenCV-JIT uses [CXXynergy](https://github.com/Junker/cxxynergy) system
 which compiles C++ bindings on system load, providing JIT compilation of C++
 code at load time instead of pre-compiled FFI bindings.
 
